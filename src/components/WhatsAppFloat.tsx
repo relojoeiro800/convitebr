@@ -1,7 +1,7 @@
 import { MessageCircle } from "lucide-react";
 
 export function WhatsAppFloat() {
-  const phone = "5511999999999";
+  const phone = "5516991032511";
   const text = encodeURIComponent("Olá! Quero saber mais sobre o Convite BR.");
   return (
     <a
