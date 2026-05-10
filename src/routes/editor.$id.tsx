@@ -97,11 +97,43 @@ function Editor() {
         gift_list_url: payload.gift_list_url, dress_code: payload.dress_code,
         couple_story: payload.couple_story, playlist_url: payload.playlist_url,
         baby_name: payload.baby_name, baby_theme: payload.baby_theme,
+        font_family: payload.font_family, accent_color: payload.accent_color,
+        background_music_url: payload.background_music_url, video_url: payload.video_url,
+        stickers: payload.stickers as unknown as object, frame_style: payload.frame_style,
       })
       .eq("id", inv.id);
     setSaving(false);
     if (error) toast.error(error.message);
     else { toast.success("Salvo!"); if (extra) setInv((p) => (p ? { ...p, ...extra } : p)); }
+  }
+
+  async function handleUpload(field: "cover_image_url" | "background_music_url" | "video_url", file: File) {
+    if (!user || !inv) return;
+    try {
+      toast.loading("Enviando arquivo…", { id: "up" });
+      const url = await uploadInviteMedia(file, user.id, inv.id);
+      update(field, url);
+      toast.success("Arquivo enviado!", { id: "up" });
+    } catch (e) {
+      toast.error((e as Error).message, { id: "up" });
+    }
+  }
+
+  function addSticker(emoji: string) {
+    const s: Sticker = {
+      id: Math.random().toString(36).slice(2, 9),
+      emoji, x: 50, y: 50, size: 40,
+    };
+    update("stickers", [...(inv?.stickers ?? []), s]);
+  }
+  function moveSticker(sid: string, x: number, y: number) {
+    update("stickers", (inv?.stickers ?? []).map((s) => s.id === sid ? { ...s, x, y } : s));
+  }
+  function removeSticker(sid: string) {
+    update("stickers", (inv?.stickers ?? []).filter((s) => s.id !== sid));
+  }
+  function resizeSticker(sid: string, size: number) {
+    update("stickers", (inv?.stickers ?? []).map((s) => s.id === sid ? { ...s, size } : s));
   }
 
   async function addParticipant(e: React.FormEvent<HTMLFormElement>) {
