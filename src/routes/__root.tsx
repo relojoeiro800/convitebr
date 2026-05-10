@@ -73,10 +73,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: "Convite BR — Convites digitais elegantes" },
       { name: "description", content: "Crie convites digitais sofisticados para casamentos, aniversários, chá de bebê e muito mais. RSVP, link único e visual Nebula Premium." },
       { name: "author", content: "Convite BR" },
+      { name: "theme-color", content: "#0b0613" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "Convite BR" },
       { property: "og:title", content: "Convite BR — Convites digitais elegantes" },
       { property: "og:description", content: "Convites digitais com RSVP, design Nebula e link compartilhável." },
       { property: "og:type", content: "website" },
@@ -84,10 +89,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
+      { rel: "stylesheet", href: appCss },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+      { rel: "icon", type: "image/png", sizes: "192x192", href: "/icon-192.png" },
+      { rel: "icon", type: "image/png", sizes: "512x512", href: "/icon-512.png" },
     ],
   }),
   shellComponent: RootShell,
