@@ -68,7 +68,8 @@ function Editor() {
     if (!user) return;
     supabase.from("invites").select("*").eq("id", id).single().then(({ data, error }) => {
       if (error) { toast.error(error.message); navigate({ to: "/dashboard" }); return; }
-      setInv(data as Invite);
+      const d = data as Record<string, unknown>;
+      setInv({ ...(d as object), stickers: Array.isArray(d.stickers) ? (d.stickers as Sticker[]) : [] } as Invite);
     });
     supabase.from("rsvps").select("*").eq("invite_id", id).order("created_at", { ascending: false }).then(({ data }) => {
       setRsvps((data ?? []) as Rsvp[]);
