@@ -14,6 +14,7 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SorteioTokenRouteImport } from './routes/sorteio.$token'
 import { Route as EditorIdRouteImport } from './routes/editor.$id'
 import { Route as ConviteSlugRouteImport } from './routes/convite.$slug'
 
@@ -42,6 +43,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SorteioTokenRoute = SorteioTokenRouteImport.update({
+  id: '/sorteio/$token',
+  path: '/sorteio/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EditorIdRoute = EditorIdRouteImport.update({
   id: '/editor/$id',
   path: '/editor/$id',
@@ -61,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/convite/$slug': typeof ConviteSlugRoute
   '/editor/$id': typeof EditorIdRoute
+  '/sorteio/$token': typeof SorteioTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/convite/$slug': typeof ConviteSlugRoute
   '/editor/$id': typeof EditorIdRoute
+  '/sorteio/$token': typeof SorteioTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +88,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/convite/$slug': typeof ConviteSlugRoute
   '/editor/$id': typeof EditorIdRoute
+  '/sorteio/$token': typeof SorteioTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/convite/$slug'
     | '/editor/$id'
+    | '/sorteio/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/convite/$slug'
     | '/editor/$id'
+    | '/sorteio/$token'
   id:
     | '__root__'
     | '/'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/convite/$slug'
     | '/editor/$id'
+    | '/sorteio/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,6 +131,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   ConviteSlugRoute: typeof ConviteSlugRoute
   EditorIdRoute: typeof EditorIdRoute
+  SorteioTokenRoute: typeof SorteioTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -158,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sorteio/$token': {
+      id: '/sorteio/$token'
+      path: '/sorteio/$token'
+      fullPath: '/sorteio/$token'
+      preLoaderRoute: typeof SorteioTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/editor/$id': {
       id: '/editor/$id'
       path: '/editor/$id'
@@ -183,7 +203,18 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   ConviteSlugRoute: ConviteSlugRoute,
   EditorIdRoute: EditorIdRoute,
+  SorteioTokenRoute: SorteioTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
