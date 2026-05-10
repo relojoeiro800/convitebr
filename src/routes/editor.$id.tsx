@@ -782,6 +782,18 @@ function Editor() {
               </div>
               <Switch checked={inv.rsvp_enabled} onCheckedChange={(v) => save({ rsvp_enabled: v })} />
             </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="max_guests">Limite total de convidados (opcional)</Label>
+              <Input
+                id="max_guests"
+                type="number"
+                min={1}
+                defaultValue={(inv as unknown as { max_guests?: number }).max_guests ?? ""}
+                onBlur={(e) => save({ max_guests: e.target.value ? Number(e.target.value) : null } as Partial<Invite>)}
+                placeholder="Ex.: 120"
+              />
+              <p className="text-xs text-muted-foreground">As confirmações param automaticamente ao atingir o limite.</p>
+            </div>
             {inv.published && (
               <div className="rounded-xl bg-secondary p-4">
                 <p className="text-xs text-muted-foreground">Link público</p>
