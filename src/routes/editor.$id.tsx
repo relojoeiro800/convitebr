@@ -170,6 +170,8 @@ function Editor() {
       <Tabs defaultValue="content">
         <TabsList className="bg-secondary">
           <TabsTrigger value="content">Conteúdo</TabsTrigger>
+          <TabsTrigger value="extras">Extras</TabsTrigger>
+          {isSecretSanta && <TabsTrigger value="santa">Amigo Secreto</TabsTrigger>}
           <TabsTrigger value="settings">Ajustes</TabsTrigger>
           <TabsTrigger value="rsvp">Confirmações ({rsvps.length})</TabsTrigger>
         </TabsList>
@@ -244,6 +246,165 @@ function Editor() {
             </div>
           </div>
         </TabsContent>
+
+        {/* EXTRAS — campos por tipo */}
+        <TabsContent value="extras" className="mt-4">
+          <div className="glass space-y-4 rounded-3xl p-6">
+            <div className="space-y-1.5">
+              <Label>Lista de presentes (URL)</Label>
+              <Input
+                value={inv.gift_list_url ?? ""}
+                onChange={(e) => update("gift_list_url", e.target.value)}
+                placeholder="https://lista.com/…"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Playlist (URL Spotify, YouTube…)</Label>
+              <Input
+                value={inv.playlist_url ?? ""}
+                onChange={(e) => update("playlist_url", e.target.value)}
+                placeholder="https://open.spotify.com/…"
+              />
+            </div>
+            {isWedding && (
+              <>
+                <div className="space-y-1.5">
+                  <Label>Dress code</Label>
+                  <Input
+                    value={inv.dress_code ?? ""}
+                    onChange={(e) => update("dress_code", e.target.value)}
+                    placeholder="Ex.: Esporte fino, tons claros"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Nossa história (casal)</Label>
+                  <Textarea
+                    value={inv.couple_story ?? ""}
+                    onChange={(e) => update("couple_story", e.target.value)}
+                    rows={5}
+                    placeholder="Como tudo começou…"
+                  />
+                </div>
+              </>
+            )}
+            {isBaby && (
+              <>
+                <div className="space-y-1.5">
+                  <Label>Nome do bebê</Label>
+                  <Input
+                    value={inv.baby_name ?? ""}
+                    onChange={(e) => update("baby_name", e.target.value)}
+                    placeholder="Ex.: Helena"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Tema (cores / decoração)</Label>
+                  <Input
+                    value={inv.baby_theme ?? ""}
+                    onChange={(e) => update("baby_theme", e.target.value)}
+                    placeholder="Ex.: Floresta encantada, tons rosa"
+                  />
+                </div>
+              </>
+            )}
+            <Button
+              onClick={() => save()}
+              disabled={saving}
+              className="bg-gradient-primary text-primary-foreground"
+            >
+              <Save className="mr-1 h-4 w-4" /> Salvar extras
+            </Button>
+          </div>
+        </TabsContent>
+
+        {/* AMIGO SECRETO */}
+        {isSecretSanta && (
+          <TabsContent value="santa" className="mt-4">
+            <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
+              <div className="glass space-y-4 rounded-3xl p-6">
+                <div className="flex items-center gap-2">
+                  <Gift className="h-5 w-5 text-primary" />
+                  <h3 className="font-display text-xl font-semibold">Adicionar participante</h3>
+                </div>
+                <form onSubmit={addParticipant} className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label>Nome</Label>
+                    <Input name="name" required maxLength={80} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>E-mail (opcional)</Label>
+                    <Input name="email" type="email" maxLength={120} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Telefone (opcional)</Label>
+                    <Input name="phone" maxLength={30} placeholder="+55 11 99999-9999" />
+                  </div>
+                  <Button type="submit" className="w-full bg-gradient-primary text-primary-foreground">
+                    Adicionar
+                  </Button>
+                </form>
+                <Button
+                  onClick={runDraw}
+                  disabled={drawing || participants.length < 2}
+                  variant="outline"
+                  className="w-full border-primary/30"
+                >
+                  <Shuffle className="mr-2 h-4 w-4" />
+                  {drawing ? "Sorteando…" : "Realizar sorteio"}
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  Mínimo 2 participantes. O sorteio embaralha aleatoriamente.
+                </p>
+              </div>
+
+              <div className="glass rounded-3xl p-6">
+                <h3 className="mb-4 font-display text-xl font-semibold">
+                  Participantes ({participants.length})
+                </h3>
+                {participants.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    Nenhum participante ainda.
+                  </p>
+                ) : (
+                  <ul className="divide-y divide-white/5">
+                    {participants.map((p) => (
+                      <li key={p.id} className="flex items-center justify-between gap-3 py-3">
+                        <div className="min-w-0">
+                          <p className="font-medium truncate">{p.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {p.email || p.phone || "—"}
+                          </p>
+                          {p.assigned_to_id && (
+                            <p className="mt-1 text-xs text-primary">✓ sorteado</p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-white/15 bg-white/5"
+                            onClick={() => copyRevealLink(p.reveal_token)}
+                            title="Copiar link de revelação"
+                          >
+                            <Copy className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-destructive"
+                            onClick={() => removeParticipant(p.id)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          </TabsContent>
+        )}
 
         <TabsContent value="settings" className="mt-4">
           <div className="glass space-y-5 rounded-3xl p-6">
