@@ -231,9 +231,10 @@ function Dashboard() {
                   </Link>
                 </Button>
                 {inv.published && (
-                  <Button onClick={() => handleShare(inv.slug)} size="sm" variant="outline" className="border-white/15 bg-white/5">
-                    <Share2 className="mr-1 h-3.5 w-3.5" /> Compartilhar
-                  </Button>
+                  <ShareInvite
+                    url={`${typeof window !== "undefined" ? window.location.origin : ""}/convite/${inv.slug}`}
+                    title={inv.title}
+                  />
                 )}
                 <Button onClick={() => handleDelete(inv.id)} size="sm" variant="ghost" className="ml-auto text-destructive">
                   <Trash2 className="h-3.5 w-3.5" />
