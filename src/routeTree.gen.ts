@@ -17,6 +17,7 @@ import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as PlanosRouteImport } from './routes/planos'
 import { Route as IaRouteImport } from './routes/ia'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as DiferenciaisRouteImport } from './routes/diferenciais'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -66,6 +67,11 @@ const IaRoute = IaRouteImport.update({
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiferenciaisRoute = DiferenciaisRouteImport.update({
+  id: '/diferenciais',
+  path: '/diferenciais',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -124,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/diferenciais': typeof DiferenciaisRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/ia': typeof IaRoute
   '/planos': typeof PlanosRoute
@@ -144,6 +151,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/diferenciais': typeof DiferenciaisRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/ia': typeof IaRoute
   '/planos': typeof PlanosRoute
@@ -165,6 +173,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/diferenciais': typeof DiferenciaisRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/ia': typeof IaRoute
   '/planos': typeof PlanosRoute
@@ -187,6 +196,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/dashboard'
+    | '/diferenciais'
     | '/forgot-password'
     | '/ia'
     | '/planos'
@@ -207,6 +217,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/dashboard'
+    | '/diferenciais'
     | '/forgot-password'
     | '/ia'
     | '/planos'
@@ -227,6 +238,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/dashboard'
+    | '/diferenciais'
     | '/forgot-password'
     | '/ia'
     | '/planos'
@@ -248,6 +260,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
   DashboardRoute: typeof DashboardRoute
+  DiferenciaisRoute: typeof DiferenciaisRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   IaRoute: typeof IaRoute
   PlanosRoute: typeof PlanosRoute
@@ -320,6 +333,13 @@ declare module '@tanstack/react-router' {
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/diferenciais': {
+      id: '/diferenciais'
+      path: '/diferenciais'
+      fullPath: '/diferenciais'
+      preLoaderRoute: typeof DiferenciaisRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -400,6 +420,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
   DashboardRoute: DashboardRoute,
+  DiferenciaisRoute: DiferenciaisRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   IaRoute: IaRoute,
   PlanosRoute: PlanosRoute,
@@ -418,3 +439,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
