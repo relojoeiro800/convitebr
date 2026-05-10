@@ -87,10 +87,16 @@ function PublicInvite() {
     };
   }, [inv?.background_music_url]);
 
+  const formMountedAt = useRef<number>(Date.now());
   async function handleRsvp(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!inv) return;
     const fd = new FormData(e.currentTarget);
+    // Anti-spam: honeypot field (must be empty) + minimum fill time (>2s)
+    if (String(fd.get("website") || "").length > 0) return;
+    if (Date.now() - formMountedAt.current < 2000) {
+      return toast.error("Aguarde um instante antes de enviar");
+    }
     const guest_name = String(fd.get("name") || "").trim().slice(0, 80);
     const attending = fd.get("attending") === "yes";
     const guest_count = Math.max(1, Math.min(20, Number(fd.get("guest_count") || 1)));
@@ -340,6 +346,12 @@ function PublicInvite() {
                 </div>
               ) : (
                 <form onSubmit={handleRsvp} className="mx-auto mt-6 max-w-md space-y-4">
+                  {/* Honeypot anti-spam: hidden from users, bots fill it */}
+                  <input
+                    type="text" name="website" tabIndex={-1} autoComplete="off"
+                    aria-hidden="true"
+                    style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }}
+                  />
                   <div className="space-y-1.5">
                     <Label htmlFor="name">Seu nome</Label>
                     <Input id="name" name="name" required maxLength={80} />
