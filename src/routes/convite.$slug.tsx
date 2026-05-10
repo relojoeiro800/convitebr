@@ -294,17 +294,34 @@ function PublicInvite() {
           {inv.rsvp_enabled && (
             <div className="mt-12 border-t border-white/10 pt-8 text-left">
               <h2 className="text-center font-display text-2xl font-semibold">Confirme sua presença</h2>
-              {submitted ? (
+              {submittedToken !== null ? (
                 <div className="mt-6 glass rounded-2xl p-6 text-center">
                   <Heart className="mx-auto h-8 w-8 text-primary" />
                   <p className="mt-3 font-display text-xl">Obrigado!</p>
                   <p className="mt-1 text-sm text-muted-foreground">Sua resposta foi registrada.</p>
+                  {submittedToken && (
+                    <div className="mt-5 flex flex-col items-center gap-2">
+                      <p className="text-xs uppercase tracking-wider text-muted-foreground">Seu QR Code de entrada</p>
+                      <QRCode value={`${typeof window !== "undefined" ? window.location.origin : ""}/rsvp/${submittedToken}`} size={160} />
+                      <a className="text-xs text-primary hover:underline" href={`/rsvp/${submittedToken}`}>Abrir comprovante</a>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <form onSubmit={handleRsvp} className="mx-auto mt-6 max-w-md space-y-4">
                   <div className="space-y-1.5">
                     <Label htmlFor="name">Seu nome</Label>
                     <Input id="name" name="name" required maxLength={80} />
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="email">E-mail (opcional)</Label>
+                      <Input id="email" name="email" type="email" maxLength={120} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="phone">WhatsApp (opcional)</Label>
+                      <Input id="phone" name="phone" maxLength={30} />
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label>Você vai comparecer?</Label>
@@ -318,8 +335,12 @@ function PublicInvite() {
                     <Input id="guest_count" name="guest_count" type="number" min={1} max={20} defaultValue={1} />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="message">Mensagem (opcional)</Label>
-                    <Textarea id="message" name="message" rows={3} maxLength={500} />
+                    <Label htmlFor="message">Mensagem para os anfitriões (opcional)</Label>
+                    <Textarea id="message" name="message" rows={2} maxLength={500} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="notes">Restrições alimentares / observações</Label>
+                    <Textarea id="notes" name="notes" rows={2} maxLength={500} placeholder="Ex.: vegetariano, sem lactose…" />
                   </div>
                   <Button disabled={submitting} type="submit" className="w-full bg-gradient-primary text-primary-foreground shadow-glow">
                     <Send className="mr-2 h-4 w-4" /> Enviar confirmação
