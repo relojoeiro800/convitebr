@@ -41,11 +41,22 @@ function Editor() {
   const navigate = useNavigate();
   const [inv, setInv] = useState<Invite | null>(null);
   const [rsvps, setRsvps] = useState<Rsvp[]>([]);
+  const [participants, setParticipants] = useState<Participant[]>([]);
   const [saving, setSaving] = useState(false);
+  const [drawing, setDrawing] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth" });
   }, [authLoading, user, navigate]);
+
+  async function loadParticipants() {
+    const { data } = await supabase
+      .from("secret_santa_participants")
+      .select("id,name,email,phone,reveal_token,assigned_to_id")
+      .eq("invite_id", id)
+      .order("created_at", { ascending: true });
+    setParticipants((data ?? []) as Participant[]);
+  }
 
   useEffect(() => {
     if (!user) return;
@@ -56,6 +67,7 @@ function Editor() {
     supabase.from("rsvps").select("*").eq("invite_id", id).order("created_at", { ascending: false }).then(({ data }) => {
       setRsvps((data ?? []) as Rsvp[]);
     });
+    loadParticipants();
   }, [user, id, navigate]);
 
   if (!inv) return <div className="p-12 text-center text-muted-foreground">Carregando…</div>;
@@ -75,6 +87,9 @@ function Editor() {
         event_date: payload.event_date, location: payload.location, location_url: payload.location_url,
         description: payload.description, message: payload.message, theme: payload.theme,
         cover_image_url: payload.cover_image_url, published: payload.published, rsvp_enabled: payload.rsvp_enabled,
+        gift_list_url: payload.gift_list_url, dress_code: payload.dress_code,
+        couple_story: payload.couple_story, playlist_url: payload.playlist_url,
+        baby_name: payload.baby_name, baby_theme: payload.baby_theme,
       })
       .eq("id", inv.id);
     setSaving(false);
@@ -82,7 +97,49 @@ function Editor() {
     else { toast.success("Salvo!"); if (extra) setInv((p) => (p ? { ...p, ...extra } : p)); }
   }
 
+  async function addParticipant(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!inv) return;
+    const fd = new FormData(e.currentTarget);
+    const name = String(fd.get("name") || "").trim().slice(0, 80);
+    const email = String(fd.get("email") || "").trim().slice(0, 120) || null;
+    const phone = String(fd.get("phone") || "").trim().slice(0, 30) || null;
+    if (!name) return toast.error("Informe o nome");
+    const { error } = await supabase
+      .from("secret_santa_participants")
+      .insert({ invite_id: inv.id, name, email, phone });
+    if (error) return toast.error(error.message);
+    (e.currentTarget as HTMLFormElement).reset();
+    loadParticipants();
+  }
+
+  async function removeParticipant(pid: string) {
+    if (!confirm("Remover este participante?")) return;
+    await supabase.from("secret_santa_participants").delete().eq("id", pid);
+    loadParticipants();
+  }
+
+  async function runDraw() {
+    if (!inv) return;
+    if (!confirm("Realizar o sorteio? Isso substituirá qualquer sorteio anterior.")) return;
+    setDrawing(true);
+    const { error } = await supabase.rpc("draw_secret_santa", { _invite_id: inv.id });
+    setDrawing(false);
+    if (error) return toast.error(error.message);
+    toast.success("Sorteio realizado! Compartilhe os links de revelação.");
+    loadParticipants();
+  }
+
+  function copyRevealLink(token: string) {
+    const url = `${window.location.origin}/sorteio/${token}`;
+    navigator.clipboard.writeText(url);
+    toast.success("Link copiado!");
+  }
+
   const publicUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/convite/${inv.slug}`;
+  const isSecretSanta = inv.type === "amigo_secreto";
+  const isWedding = inv.type === "casamento";
+  const isBaby = inv.type === "cha_bebe" || inv.type === "cha_revelacao";
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
