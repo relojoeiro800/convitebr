@@ -37,7 +37,7 @@ function PublicInvite() {
   const [inv, setInv] = useState<Invite | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [submittedToken, setSubmittedToken] = useState<string | null>(null);
   const [musicOn, setMusicOn] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -75,14 +75,17 @@ function PublicInvite() {
     const attending = fd.get("attending") === "yes";
     const guest_count = Math.max(1, Math.min(20, Number(fd.get("guest_count") || 1)));
     const message = String(fd.get("message") || "").trim().slice(0, 500) || null;
+    const notes = String(fd.get("notes") || "").trim().slice(0, 500) || null;
+    const email = String(fd.get("email") || "").trim().slice(0, 120) || null;
+    const phone = String(fd.get("phone") || "").trim().slice(0, 30) || null;
     if (!guest_name) return toast.error("Informe seu nome");
     setSubmitting(true);
-    const { error } = await supabase.from("rsvps").insert({
-      invite_id: inv.id, guest_name, attending, guest_count, message,
-    });
+    const { data, error } = await supabase.from("rsvps").insert({
+      invite_id: inv.id, guest_name, attending, guest_count, message, notes, email, phone,
+    }).select("token").single();
     setSubmitting(false);
     if (error) return toast.error(error.message);
-    setSubmitted(true);
+    setSubmittedToken((data as { token: string } | null)?.token ?? "");
   }
 
   if (loading) return <div className="p-12 text-center text-muted-foreground">Carregando…</div>;
