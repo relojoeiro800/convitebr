@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as PlanosRouteImport } from './routes/planos'
 import { Route as IaRouteImport } from './routes/ia'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
@@ -33,6 +34,11 @@ const TemplatesRoute = TemplatesRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RelatoriosRoute = RelatoriosRouteImport.update({
+  id: '/relatorios',
+  path: '/relatorios',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlanosRoute = PlanosRouteImport.update({
@@ -109,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/ia': typeof IaRoute
   '/planos': typeof PlanosRoute
+  '/relatorios': typeof RelatoriosRoute
   '/reset-password': typeof ResetPasswordRoute
   '/templates': typeof TemplatesRoute
   '/checkin/$id': typeof CheckinIdRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/ia': typeof IaRoute
   '/planos': typeof PlanosRoute
+  '/relatorios': typeof RelatoriosRoute
   '/reset-password': typeof ResetPasswordRoute
   '/templates': typeof TemplatesRoute
   '/checkin/$id': typeof CheckinIdRoute
@@ -144,6 +152,7 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/ia': typeof IaRoute
   '/planos': typeof PlanosRoute
+  '/relatorios': typeof RelatoriosRoute
   '/reset-password': typeof ResetPasswordRoute
   '/templates': typeof TemplatesRoute
   '/checkin/$id': typeof CheckinIdRoute
@@ -163,6 +172,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/ia'
     | '/planos'
+    | '/relatorios'
     | '/reset-password'
     | '/templates'
     | '/checkin/$id'
@@ -180,6 +190,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/ia'
     | '/planos'
+    | '/relatorios'
     | '/reset-password'
     | '/templates'
     | '/checkin/$id'
@@ -197,6 +208,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/ia'
     | '/planos'
+    | '/relatorios'
     | '/reset-password'
     | '/templates'
     | '/checkin/$id'
@@ -215,6 +227,7 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   IaRoute: typeof IaRoute
   PlanosRoute: typeof PlanosRoute
+  RelatoriosRoute: typeof RelatoriosRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TemplatesRoute: typeof TemplatesRoute
   CheckinIdRoute: typeof CheckinIdRoute
@@ -239,6 +252,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/relatorios': {
+      id: '/relatorios'
+      path: '/relatorios'
+      fullPath: '/relatorios'
+      preLoaderRoute: typeof RelatoriosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/planos': {
@@ -343,6 +363,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   IaRoute: IaRoute,
   PlanosRoute: PlanosRoute,
+  RelatoriosRoute: RelatoriosRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TemplatesRoute: TemplatesRoute,
   CheckinIdRoute: CheckinIdRoute,
