@@ -1,13 +1,17 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Calendar, MapPin, Heart, Send, ExternalLink } from "lucide-react";
+import {
+  Calendar, MapPin, Heart, Send, ExternalLink, Gift, Music, Shirt, Baby, BookOpen, QrCode as QrIcon,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Countdown } from "@/components/Countdown";
+import { QRCode } from "@/components/QRCode";
 import { INVITE_TYPES, formatEventDate, type InviteType } from "@/lib/invites";
 
 export const Route = createFileRoute("/convite/$slug")({
@@ -19,6 +23,8 @@ type Invite = {
   host_names: string | null; event_date: string | null; location: string | null;
   location_url: string | null; description: string | null; message: string | null;
   cover_image_url: string | null; rsvp_enabled: boolean;
+  gift_list_url: string | null; dress_code: string | null; couple_story: string | null;
+  playlist_url: string | null; baby_name: string | null; baby_theme: string | null;
 };
 
 function PublicInvite() {
