@@ -99,7 +99,7 @@ function Editor() {
         baby_name: payload.baby_name, baby_theme: payload.baby_theme,
         font_family: payload.font_family, accent_color: payload.accent_color,
         background_music_url: payload.background_music_url, video_url: payload.video_url,
-        stickers: payload.stickers as unknown as object, frame_style: payload.frame_style,
+        stickers: JSON.parse(JSON.stringify(payload.stickers ?? [])), frame_style: payload.frame_style,
       })
       .eq("id", inv.id);
     setSaving(false);
