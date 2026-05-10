@@ -16,15 +16,21 @@ export type Database = {
     Tables: {
       invites: {
         Row: {
+          baby_name: string | null
+          baby_theme: string | null
+          couple_story: string | null
           cover_image_url: string | null
           created_at: string
           description: string | null
+          dress_code: string | null
           event_date: string | null
+          gift_list_url: string | null
           host_names: string | null
           id: string
           location: string | null
           location_url: string | null
           message: string | null
+          playlist_url: string | null
           published: boolean
           rsvp_enabled: boolean
           slug: string
@@ -36,15 +42,21 @@ export type Database = {
           view_count: number
         }
         Insert: {
+          baby_name?: string | null
+          baby_theme?: string | null
+          couple_story?: string | null
           cover_image_url?: string | null
           created_at?: string
           description?: string | null
+          dress_code?: string | null
           event_date?: string | null
+          gift_list_url?: string | null
           host_names?: string | null
           id?: string
           location?: string | null
           location_url?: string | null
           message?: string | null
+          playlist_url?: string | null
           published?: boolean
           rsvp_enabled?: boolean
           slug: string
@@ -56,15 +68,21 @@ export type Database = {
           view_count?: number
         }
         Update: {
+          baby_name?: string | null
+          baby_theme?: string | null
+          couple_story?: string | null
           cover_image_url?: string | null
           created_at?: string
           description?: string | null
+          dress_code?: string | null
           event_date?: string | null
+          gift_list_url?: string | null
           host_names?: string | null
           id?: string
           location?: string | null
           location_url?: string | null
           message?: string | null
+          playlist_url?: string | null
           published?: boolean
           rsvp_enabled?: boolean
           slug?: string
@@ -139,11 +157,69 @@ export type Database = {
           },
         ]
       }
+      secret_santa_participants: {
+        Row: {
+          assigned_to_id: string | null
+          created_at: string
+          email: string | null
+          id: string
+          invite_id: string
+          name: string
+          phone: string | null
+          reveal_token: string
+        }
+        Insert: {
+          assigned_to_id?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          invite_id: string
+          name: string
+          phone?: string | null
+          reveal_token?: string
+        }
+        Update: {
+          assigned_to_id?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          invite_id?: string
+          name?: string
+          phone?: string | null
+          reveal_token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "secret_santa_participants_assigned_to_id_fkey"
+            columns: ["assigned_to_id"]
+            isOneToOne: false
+            referencedRelation: "secret_santa_participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "secret_santa_participants_invite_id_fkey"
+            columns: ["invite_id"]
+            isOneToOne: false
+            referencedRelation: "invites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      draw_secret_santa: { Args: { _invite_id: string }; Returns: number }
+      get_secret_santa_assignment: {
+        Args: { _token: string }
+        Returns: {
+          assigned_name: string
+          event_date: string
+          invite_title: string
+          participant_name: string
+        }[]
+      }
       increment_invite_view: { Args: { _slug: string }; Returns: undefined }
     }
     Enums: {

@@ -1,13 +1,17 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Calendar, MapPin, Heart, Send, ExternalLink } from "lucide-react";
+import {
+  Calendar, MapPin, Heart, Send, ExternalLink, Gift, Music, Shirt, Baby, BookOpen, QrCode as QrIcon,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Countdown } from "@/components/Countdown";
+import { QRCode } from "@/components/QRCode";
 import { INVITE_TYPES, formatEventDate, type InviteType } from "@/lib/invites";
 
 export const Route = createFileRoute("/convite/$slug")({
@@ -19,6 +23,8 @@ type Invite = {
   host_names: string | null; event_date: string | null; location: string | null;
   location_url: string | null; description: string | null; message: string | null;
   cover_image_url: string | null; rsvp_enabled: boolean;
+  gift_list_url: string | null; dress_code: string | null; couple_story: string | null;
+  playlist_url: string | null; baby_name: string | null; baby_theme: string | null;
 };
 
 function PublicInvite() {
@@ -31,7 +37,7 @@ function PublicInvite() {
   useEffect(() => {
     supabase
       .from("invites")
-      .select("id,slug,type,title,host_names,event_date,location,location_url,description,message,cover_image_url,rsvp_enabled")
+      .select("id,slug,type,title,host_names,event_date,location,location_url,description,message,cover_image_url,rsvp_enabled,gift_list_url,dress_code,couple_story,playlist_url,baby_name,baby_theme")
       .eq("slug", slug)
       .eq("published", true)
       .maybeSingle()
@@ -131,6 +137,112 @@ function PublicInvite() {
           {inv.description && (
             <p className="mx-auto mt-8 max-w-md text-sm text-muted-foreground">{inv.description}</p>
           )}
+
+          {/* COUNTDOWN */}
+          {inv.event_date && (
+            <div className="mx-auto mt-10 max-w-md">
+              <p className="mb-3 text-xs uppercase tracking-wider text-muted-foreground">
+                Contagem regressiva
+              </p>
+              <Countdown date={inv.event_date} />
+            </div>
+          )}
+
+          {/* CASAMENTO: história do casal */}
+          {inv.couple_story && (inv.type === "casamento") && (
+            <div className="mx-auto mt-10 max-w-md text-left">
+              <div className="mb-3 flex items-center justify-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
+                <BookOpen className="h-4 w-4 text-primary" /> Nossa história
+              </div>
+              <p className="glass rounded-2xl p-5 text-sm leading-relaxed whitespace-pre-line">
+                {inv.couple_story}
+              </p>
+            </div>
+          )}
+
+          {/* CHÁ DE BEBÊ / REVELAÇÃO */}
+          {inv.baby_name && (inv.type === "cha_bebe" || inv.type === "cha_revelacao") && (
+            <div className="mx-auto mt-10 max-w-md">
+              <div className="glass rounded-2xl p-6 text-center">
+                <Baby className="mx-auto h-7 w-7 text-primary" />
+                <p className="mt-3 text-xs uppercase tracking-wider text-muted-foreground">
+                  Vamos receber
+                </p>
+                <p className="mt-1 font-display text-3xl font-semibold text-gradient">
+                  {inv.baby_name}
+                </p>
+                {inv.baby_theme && (
+                  <p className="mt-2 text-xs text-muted-foreground">Tema: {inv.baby_theme}</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* LISTA DE PRESENTES */}
+          {inv.gift_list_url && (
+            <div className="mx-auto mt-8 max-w-md">
+              <a
+                href={inv.gift_list_url}
+                target="_blank"
+                rel="noreferrer"
+                className="glass flex items-center gap-3 rounded-2xl p-4 transition hover:shadow-glow"
+              >
+                <Gift className="h-5 w-5 text-primary" />
+                <div className="flex-1 text-left">
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                    Lista de presentes
+                  </p>
+                  <p className="text-sm font-medium">Ver e escolher</p>
+                </div>
+                <ExternalLink className="h-4 w-4 text-muted-foreground" />
+              </a>
+            </div>
+          )}
+
+          {/* DRESS CODE */}
+          {inv.dress_code && (
+            <div className="mx-auto mt-4 max-w-md">
+              <div className="glass flex items-center gap-3 rounded-2xl p-4 text-left">
+                <Shirt className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                    Dress code
+                  </p>
+                  <p className="text-sm font-medium">{inv.dress_code}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* PLAYLIST */}
+          {inv.playlist_url && (
+            <div className="mx-auto mt-4 max-w-md">
+              <a
+                href={inv.playlist_url}
+                target="_blank"
+                rel="noreferrer"
+                className="glass flex items-center gap-3 rounded-2xl p-4 transition hover:shadow-glow"
+              >
+                <Music className="h-5 w-5 text-primary" />
+                <div className="flex-1 text-left">
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                    Playlist do evento
+                  </p>
+                  <p className="text-sm font-medium">Ouvir agora</p>
+                </div>
+                <ExternalLink className="h-4 w-4 text-muted-foreground" />
+              </a>
+            </div>
+          )}
+
+          {/* QR CODE para acesso rápido */}
+          <div className="mx-auto mt-10 flex max-w-md flex-col items-center gap-2">
+            <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
+              <QrIcon className="h-4 w-4 text-primary" /> Acesso rápido
+            </div>
+            <QRCode value={typeof window !== "undefined" ? window.location.href : ""} size={160} />
+          </div>
+
 
           {/* RSVP */}
           {inv.rsvp_enabled && (

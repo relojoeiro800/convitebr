@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Save, Eye, Users, Globe } from "lucide-react";
+import { ArrowLeft, Save, Eye, Users, Globe, Gift, Trash2, Shuffle, Copy } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -24,9 +24,16 @@ type Invite = {
   location: string | null; location_url: string | null; description: string | null;
   message: string | null; theme: string; cover_image_url: string | null;
   published: boolean; rsvp_enabled: boolean;
+  gift_list_url: string | null; dress_code: string | null; couple_story: string | null;
+  playlist_url: string | null; baby_name: string | null; baby_theme: string | null;
 };
 
 type Rsvp = { id: string; guest_name: string; attending: boolean; guest_count: number; message: string | null; created_at: string };
+
+type Participant = {
+  id: string; name: string; email: string | null; phone: string | null;
+  reveal_token: string; assigned_to_id: string | null;
+};
 
 function Editor() {
   const { id } = Route.useParams();
@@ -34,11 +41,22 @@ function Editor() {
   const navigate = useNavigate();
   const [inv, setInv] = useState<Invite | null>(null);
   const [rsvps, setRsvps] = useState<Rsvp[]>([]);
+  const [participants, setParticipants] = useState<Participant[]>([]);
   const [saving, setSaving] = useState(false);
+  const [drawing, setDrawing] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth" });
   }, [authLoading, user, navigate]);
+
+  async function loadParticipants() {
+    const { data } = await supabase
+      .from("secret_santa_participants")
+      .select("id,name,email,phone,reveal_token,assigned_to_id")
+      .eq("invite_id", id)
+      .order("created_at", { ascending: true });
+    setParticipants((data ?? []) as Participant[]);
+  }
 
   useEffect(() => {
     if (!user) return;
@@ -49,6 +67,7 @@ function Editor() {
     supabase.from("rsvps").select("*").eq("invite_id", id).order("created_at", { ascending: false }).then(({ data }) => {
       setRsvps((data ?? []) as Rsvp[]);
     });
+    loadParticipants();
   }, [user, id, navigate]);
 
   if (!inv) return <div className="p-12 text-center text-muted-foreground">Carregando…</div>;
@@ -68,6 +87,9 @@ function Editor() {
         event_date: payload.event_date, location: payload.location, location_url: payload.location_url,
         description: payload.description, message: payload.message, theme: payload.theme,
         cover_image_url: payload.cover_image_url, published: payload.published, rsvp_enabled: payload.rsvp_enabled,
+        gift_list_url: payload.gift_list_url, dress_code: payload.dress_code,
+        couple_story: payload.couple_story, playlist_url: payload.playlist_url,
+        baby_name: payload.baby_name, baby_theme: payload.baby_theme,
       })
       .eq("id", inv.id);
     setSaving(false);
@@ -75,7 +97,49 @@ function Editor() {
     else { toast.success("Salvo!"); if (extra) setInv((p) => (p ? { ...p, ...extra } : p)); }
   }
 
+  async function addParticipant(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!inv) return;
+    const fd = new FormData(e.currentTarget);
+    const name = String(fd.get("name") || "").trim().slice(0, 80);
+    const email = String(fd.get("email") || "").trim().slice(0, 120) || null;
+    const phone = String(fd.get("phone") || "").trim().slice(0, 30) || null;
+    if (!name) return toast.error("Informe o nome");
+    const { error } = await supabase
+      .from("secret_santa_participants")
+      .insert({ invite_id: inv.id, name, email, phone });
+    if (error) return toast.error(error.message);
+    (e.currentTarget as HTMLFormElement).reset();
+    loadParticipants();
+  }
+
+  async function removeParticipant(pid: string) {
+    if (!confirm("Remover este participante?")) return;
+    await supabase.from("secret_santa_participants").delete().eq("id", pid);
+    loadParticipants();
+  }
+
+  async function runDraw() {
+    if (!inv) return;
+    if (!confirm("Realizar o sorteio? Isso substituirá qualquer sorteio anterior.")) return;
+    setDrawing(true);
+    const { error } = await supabase.rpc("draw_secret_santa", { _invite_id: inv.id });
+    setDrawing(false);
+    if (error) return toast.error(error.message);
+    toast.success("Sorteio realizado! Compartilhe os links de revelação.");
+    loadParticipants();
+  }
+
+  function copyRevealLink(token: string) {
+    const url = `${window.location.origin}/sorteio/${token}`;
+    navigator.clipboard.writeText(url);
+    toast.success("Link copiado!");
+  }
+
   const publicUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/convite/${inv.slug}`;
+  const isSecretSanta = inv.type === "amigo_secreto";
+  const isWedding = inv.type === "casamento";
+  const isBaby = inv.type === "cha_bebe" || inv.type === "cha_revelacao";
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
@@ -106,6 +170,8 @@ function Editor() {
       <Tabs defaultValue="content">
         <TabsList className="bg-secondary">
           <TabsTrigger value="content">Conteúdo</TabsTrigger>
+          <TabsTrigger value="extras">Extras</TabsTrigger>
+          {isSecretSanta && <TabsTrigger value="santa">Amigo Secreto</TabsTrigger>}
           <TabsTrigger value="settings">Ajustes</TabsTrigger>
           <TabsTrigger value="rsvp">Confirmações ({rsvps.length})</TabsTrigger>
         </TabsList>
@@ -180,6 +246,165 @@ function Editor() {
             </div>
           </div>
         </TabsContent>
+
+        {/* EXTRAS — campos por tipo */}
+        <TabsContent value="extras" className="mt-4">
+          <div className="glass space-y-4 rounded-3xl p-6">
+            <div className="space-y-1.5">
+              <Label>Lista de presentes (URL)</Label>
+              <Input
+                value={inv.gift_list_url ?? ""}
+                onChange={(e) => update("gift_list_url", e.target.value)}
+                placeholder="https://lista.com/…"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Playlist (URL Spotify, YouTube…)</Label>
+              <Input
+                value={inv.playlist_url ?? ""}
+                onChange={(e) => update("playlist_url", e.target.value)}
+                placeholder="https://open.spotify.com/…"
+              />
+            </div>
+            {isWedding && (
+              <>
+                <div className="space-y-1.5">
+                  <Label>Dress code</Label>
+                  <Input
+                    value={inv.dress_code ?? ""}
+                    onChange={(e) => update("dress_code", e.target.value)}
+                    placeholder="Ex.: Esporte fino, tons claros"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Nossa história (casal)</Label>
+                  <Textarea
+                    value={inv.couple_story ?? ""}
+                    onChange={(e) => update("couple_story", e.target.value)}
+                    rows={5}
+                    placeholder="Como tudo começou…"
+                  />
+                </div>
+              </>
+            )}
+            {isBaby && (
+              <>
+                <div className="space-y-1.5">
+                  <Label>Nome do bebê</Label>
+                  <Input
+                    value={inv.baby_name ?? ""}
+                    onChange={(e) => update("baby_name", e.target.value)}
+                    placeholder="Ex.: Helena"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Tema (cores / decoração)</Label>
+                  <Input
+                    value={inv.baby_theme ?? ""}
+                    onChange={(e) => update("baby_theme", e.target.value)}
+                    placeholder="Ex.: Floresta encantada, tons rosa"
+                  />
+                </div>
+              </>
+            )}
+            <Button
+              onClick={() => save()}
+              disabled={saving}
+              className="bg-gradient-primary text-primary-foreground"
+            >
+              <Save className="mr-1 h-4 w-4" /> Salvar extras
+            </Button>
+          </div>
+        </TabsContent>
+
+        {/* AMIGO SECRETO */}
+        {isSecretSanta && (
+          <TabsContent value="santa" className="mt-4">
+            <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
+              <div className="glass space-y-4 rounded-3xl p-6">
+                <div className="flex items-center gap-2">
+                  <Gift className="h-5 w-5 text-primary" />
+                  <h3 className="font-display text-xl font-semibold">Adicionar participante</h3>
+                </div>
+                <form onSubmit={addParticipant} className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label>Nome</Label>
+                    <Input name="name" required maxLength={80} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>E-mail (opcional)</Label>
+                    <Input name="email" type="email" maxLength={120} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Telefone (opcional)</Label>
+                    <Input name="phone" maxLength={30} placeholder="+55 11 99999-9999" />
+                  </div>
+                  <Button type="submit" className="w-full bg-gradient-primary text-primary-foreground">
+                    Adicionar
+                  </Button>
+                </form>
+                <Button
+                  onClick={runDraw}
+                  disabled={drawing || participants.length < 2}
+                  variant="outline"
+                  className="w-full border-primary/30"
+                >
+                  <Shuffle className="mr-2 h-4 w-4" />
+                  {drawing ? "Sorteando…" : "Realizar sorteio"}
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  Mínimo 2 participantes. O sorteio embaralha aleatoriamente.
+                </p>
+              </div>
+
+              <div className="glass rounded-3xl p-6">
+                <h3 className="mb-4 font-display text-xl font-semibold">
+                  Participantes ({participants.length})
+                </h3>
+                {participants.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    Nenhum participante ainda.
+                  </p>
+                ) : (
+                  <ul className="divide-y divide-white/5">
+                    {participants.map((p) => (
+                      <li key={p.id} className="flex items-center justify-between gap-3 py-3">
+                        <div className="min-w-0">
+                          <p className="font-medium truncate">{p.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {p.email || p.phone || "—"}
+                          </p>
+                          {p.assigned_to_id && (
+                            <p className="mt-1 text-xs text-primary">✓ sorteado</p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-white/15 bg-white/5"
+                            onClick={() => copyRevealLink(p.reveal_token)}
+                            title="Copiar link de revelação"
+                          >
+                            <Copy className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-destructive"
+                            onClick={() => removeParticipant(p.id)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          </TabsContent>
+        )}
 
         <TabsContent value="settings" className="mt-4">
           <div className="glass space-y-5 rounded-3xl p-6">
