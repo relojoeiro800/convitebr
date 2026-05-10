@@ -296,7 +296,92 @@ function Editor() {
           </div>
         </TabsContent>
 
-        {/* VISUAL — temas, fontes, cores, molduras */}
+        {/* IA — assistente */}
+        <TabsContent value="ai" className="mt-4">
+          <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
+            <AIAssistant
+              type={inv.type}
+              title={inv.title}
+              message={inv.message}
+              onApply={(patch) => {
+                setInv((p) => p ? { ...p, ...patch } : p);
+                save(patch);
+              }}
+            />
+            <div className="glass rounded-3xl p-4 lg:sticky lg:top-4 lg:self-start">
+              <InvitePreview
+                type={inv.type} title={inv.title} host_names={inv.host_names}
+                event_date={inv.event_date} location={inv.location} message={inv.message}
+                cover_image_url={inv.cover_image_url} video_url={inv.video_url}
+                background_music_url={inv.background_music_url}
+                theme={inv.theme} font_family={inv.font_family}
+                accent_color={inv.accent_color} frame_style={inv.frame_style}
+                stickers={inv.stickers} compact
+              />
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* TEMPLATES PREMIUM */}
+        <TabsContent value="templates" className="mt-4">
+          <div className="glass space-y-4 rounded-3xl p-6">
+            <div>
+              <h3 className="font-display text-xl font-semibold">Templates prontos</h3>
+              <p className="text-sm text-muted-foreground">Aplique um layout completo com tema, fonte, moldura, cor e stickers.</p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {templatesFor(inv.type).length === 0 && (
+                <p className="col-span-full text-sm text-muted-foreground">Nenhum template para este tipo ainda.</p>
+              )}
+              {templatesFor(inv.type).map((tpl) => {
+                const themeP = THEMES.find(t => t.id === tpl.theme) ?? THEMES[0];
+                return (
+                  <div key={tpl.id} className="overflow-hidden rounded-2xl border border-white/10">
+                    <div
+                      className="relative h-40 p-4"
+                      style={{ background: themeP.gradient }}
+                    >
+                      {tpl.premium && (
+                        <span className="absolute right-2 top-2 rounded-full bg-amber-400/90 px-2 py-0.5 text-[10px] font-bold text-black">
+                          ★ PREMIUM
+                        </span>
+                      )}
+                      {tpl.stickers?.map((s) => (
+                        <span key={s.id} className="absolute select-none"
+                          style={{ left:`${s.x}%`, top:`${s.y}%`, fontSize:`${s.size*0.6}px`, transform:"translate(-50%,-50%)" }}>
+                          {s.emoji}
+                        </span>
+                      ))}
+                      <div className="absolute inset-x-0 bottom-2 text-center text-white">
+                        <p className="text-[10px] uppercase tracking-widest opacity-80">{tpl.label}</p>
+                      </div>
+                    </div>
+                    <div className="space-y-2 p-3">
+                      <Button
+                        size="sm"
+                        className="w-full bg-gradient-primary text-primary-foreground"
+                        onClick={() => {
+                          const patch = {
+                            theme: tpl.theme, font_family: tpl.font_family,
+                            accent_color: tpl.accent_color, frame_style: tpl.frame_style,
+                            stickers: tpl.stickers ?? [],
+                            ...(tpl.message && !inv.message ? { message: tpl.message } : {}),
+                          };
+                          setInv((p) => p ? { ...p, ...patch } : p);
+                          save(patch);
+                        }}
+                      >
+                        Aplicar template
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </TabsContent>
+
+
         <TabsContent value="visual" className="mt-4">
           <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
             <div className="glass space-y-6 rounded-3xl p-6">
