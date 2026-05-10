@@ -14,7 +14,128 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      invites: {
+        Row: {
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          event_date: string | null
+          host_names: string | null
+          id: string
+          location: string | null
+          location_url: string | null
+          message: string | null
+          published: boolean
+          rsvp_enabled: boolean
+          slug: string
+          theme: string
+          title: string
+          type: Database["public"]["Enums"]["invite_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          event_date?: string | null
+          host_names?: string | null
+          id?: string
+          location?: string | null
+          location_url?: string | null
+          message?: string | null
+          published?: boolean
+          rsvp_enabled?: boolean
+          slug: string
+          theme?: string
+          title: string
+          type: Database["public"]["Enums"]["invite_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          event_date?: string | null
+          host_names?: string | null
+          id?: string
+          location?: string | null
+          location_url?: string | null
+          message?: string | null
+          published?: boolean
+          rsvp_enabled?: boolean
+          slug?: string
+          theme?: string
+          title?: string
+          type?: Database["public"]["Enums"]["invite_type"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      rsvps: {
+        Row: {
+          attending: boolean
+          created_at: string
+          guest_count: number
+          guest_name: string
+          id: string
+          invite_id: string
+          message: string | null
+        }
+        Insert: {
+          attending?: boolean
+          created_at?: string
+          guest_count?: number
+          guest_name: string
+          id?: string
+          invite_id: string
+          message?: string | null
+        }
+        Update: {
+          attending?: boolean
+          created_at?: string
+          guest_count?: number
+          guest_name?: string
+          id?: string
+          invite_id?: string
+          message?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rsvps_invite_id_fkey"
+            columns: ["invite_id"]
+            isOneToOne: false
+            referencedRelation: "invites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +144,16 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      invite_type:
+        | "casamento"
+        | "aniversario"
+        | "cha_bebe"
+        | "cha_revelacao"
+        | "amigo_secreto"
+        | "formatura"
+        | "corporativo"
+        | "infantil"
+        | "religioso"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +280,18 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      invite_type: [
+        "casamento",
+        "aniversario",
+        "cha_bebe",
+        "cha_revelacao",
+        "amigo_secreto",
+        "formatura",
+        "corporativo",
+        "infantil",
+        "religioso",
+      ],
+    },
   },
 } as const
