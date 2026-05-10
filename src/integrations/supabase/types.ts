@@ -14,6 +14,65 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_templates: {
+        Row: {
+          category_id: string | null
+          config: Json
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          is_premium: boolean
+          name: string
+          preview_url: string | null
+          price_cents: number
+          status: string
+          theme: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          category_id?: string | null
+          config?: Json
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          is_premium?: boolean
+          name: string
+          preview_url?: string | null
+          price_cents?: number
+          status?: string
+          theme?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string | null
+          config?: Json
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_premium?: boolean
+          name?: string
+          preview_url?: string | null
+          price_cents?: number
+          status?: string
+          theme?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_templates_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "template_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invites: {
         Row: {
           accent_color: string | null
@@ -113,6 +172,48 @@ export type Database = {
           user_id?: string
           video_url?: string | null
           view_count?: number
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          invite_id: string | null
+          provider: string | null
+          provider_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          invite_id?: string | null
+          provider?: string | null
+          provider_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          invite_id?: string | null
+          provider?: string | null
+          provider_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -244,6 +345,108 @@ export type Database = {
           },
         ]
       }
+      suspended_accounts: {
+        Row: {
+          created_at: string
+          id: string
+          reason: string | null
+          suspended_by: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reason?: string | null
+          suspended_by: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reason?: string | null
+          suspended_by?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      system_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          id: string
+          metadata: Json
+          target_id: string | null
+          target_type: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Relationships: []
+      }
+      template_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -263,6 +466,7 @@ export type Database = {
         }[]
       }
       draw_secret_santa: { Args: { _invite_id: string }; Returns: number }
+      get_admin_stats: { Args: never; Returns: Json }
       get_rsvp_by_token: {
         Args: { _token: string }
         Returns: {
@@ -288,9 +492,17 @@ export type Database = {
           participant_name: string
         }[]
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       increment_invite_view: { Args: { _slug: string }; Returns: undefined }
     }
     Enums: {
+      app_role: "admin" | "moderator" | "user"
       invite_type:
         | "casamento"
         | "aniversario"
@@ -428,6 +640,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "moderator", "user"],
       invite_type: [
         "casamento",
         "aniversario",

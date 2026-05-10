@@ -41,6 +41,13 @@ function Dashboard() {
   const [rsvpCount, setRsvpCount] = useState(0);
   const [open, setOpen] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle()
+      .then(({ data }) => setIsAdmin(!!data));
+  }, [user]);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });
@@ -113,12 +120,18 @@ function Dashboard() {
           <h1 className="font-display text-4xl font-semibold">Meus convites</h1>
           <p className="mt-1 text-sm text-muted-foreground">Crie, edite e compartilhe seus convites</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-gradient-primary text-primary-foreground shadow-glow">
-              <Plus className="mr-2 h-4 w-4" /> Novo convite
+        <div className="flex items-center gap-2">
+          {isAdmin && (
+            <Button asChild variant="outline">
+              <Link to="/admin"><Crown className="mr-2 h-4 w-4" />Admin</Link>
             </Button>
-          </DialogTrigger>
+          )}
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-gradient-primary text-primary-foreground shadow-glow">
+                <Plus className="mr-2 h-4 w-4" /> Novo convite
+              </Button>
+            </DialogTrigger>
           <DialogContent className="glass">
             <DialogHeader>
               <DialogTitle className="font-display text-2xl">Novo convite</DialogTitle>
@@ -148,7 +161,8 @@ function Dashboard() {
               </DialogFooter>
             </form>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       {/* STATS */}
