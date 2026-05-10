@@ -121,6 +121,9 @@ function Dashboard() {
           <p className="mt-1 text-sm text-muted-foreground">Crie, edite e compartilhe seus convites</p>
         </div>
         <div className="flex items-center gap-2">
+          <Button asChild variant="outline">
+            <Link to="/templates">Templates</Link>
+          </Button>
           {isAdmin && (
             <Button asChild variant="outline">
               <Link to="/admin"><Crown className="mr-2 h-4 w-4" />Admin</Link>
