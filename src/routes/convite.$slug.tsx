@@ -37,7 +37,7 @@ function PublicInvite() {
   useEffect(() => {
     supabase
       .from("invites")
-      .select("id,slug,type,title,host_names,event_date,location,location_url,description,message,cover_image_url,rsvp_enabled")
+      .select("id,slug,type,title,host_names,event_date,location,location_url,description,message,cover_image_url,rsvp_enabled,gift_list_url,dress_code,couple_story,playlist_url,baby_name,baby_theme")
       .eq("slug", slug)
       .eq("published", true)
       .maybeSingle()
