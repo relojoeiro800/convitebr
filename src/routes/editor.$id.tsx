@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Save, Eye, Users, Globe, Gift, Trash2, Shuffle, Copy } from "lucide-react";
+import { ArrowLeft, Save, Eye, Users, Globe, Gift, Trash2, Shuffle, Copy, Upload, ImagePlus, Smile, Palette, Type, Music, Video } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { INVITE_TYPES, type InviteType, formatEventDate } from "@/lib/invites";
+import { INVITE_TYPES, type InviteType } from "@/lib/invites";
+import { THEMES, FONTS, FRAMES, STICKERS, type Sticker } from "@/lib/editor-presets";
+import { InvitePreview } from "@/components/InvitePreview";
+import { uploadInviteMedia } from "@/lib/upload";
 
 export const Route = createFileRoute("/editor/$id")({
   component: Editor,
@@ -26,6 +29,9 @@ type Invite = {
   published: boolean; rsvp_enabled: boolean;
   gift_list_url: string | null; dress_code: string | null; couple_story: string | null;
   playlist_url: string | null; baby_name: string | null; baby_theme: string | null;
+  font_family: string | null; accent_color: string | null;
+  background_music_url: string | null; video_url: string | null;
+  stickers: Sticker[]; frame_style: string | null;
 };
 
 type Rsvp = { id: string; guest_name: string; attending: boolean; guest_count: number; message: string | null; created_at: string };
