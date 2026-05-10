@@ -33,7 +33,7 @@ type Invite = {
   playlist_url: string | null; baby_name: string | null; baby_theme: string | null;
   font_family: string | null; accent_color: string | null;
   background_music_url: string | null; video_url: string | null;
-  stickers: Sticker[]; frame_style: string | null;
+  stickers: Sticker[]; frame_style: string | null; max_guests: number | null;
 };
 
 type Rsvp = { id: string; guest_name: string; attending: boolean; guest_count: number; message: string | null; created_at: string };
