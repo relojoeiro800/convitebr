@@ -139,7 +139,11 @@ function PublicInvite() {
           </button>
         </>
       )}
-      <article className={`relative overflow-hidden rounded-[2rem] shadow-elegant ${frame.css ?? ""}`} style={{ background: theme.gradient }}>
+      <article className={`relative animate-scale-in overflow-hidden rounded-[2rem] shadow-elegant ${frame.css ?? ""}`} style={{ background: theme.gradient }}>
+        <div aria-hidden className="pointer-events-none absolute -top-20 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full opacity-40 blur-3xl"
+             style={{ background: `radial-gradient(circle, ${accent}, transparent 70%)` }} />
+        <div aria-hidden className="pointer-events-none absolute -bottom-32 right-0 h-80 w-80 rounded-full opacity-30 blur-3xl"
+             style={{ background: `radial-gradient(circle, ${accent}, transparent 70%)` }} />
         {/* COVER */}
         <div className="relative h-56 overflow-hidden sm:h-72">
           {inv.cover_image_url ? (
