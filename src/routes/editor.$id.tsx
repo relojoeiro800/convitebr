@@ -15,6 +15,8 @@ import { INVITE_TYPES, type InviteType } from "@/lib/invites";
 import { THEMES, FONTS, FRAMES, STICKERS, type Sticker } from "@/lib/editor-presets";
 import { InvitePreview } from "@/components/InvitePreview";
 import { uploadInviteMedia } from "@/lib/upload";
+import { AIAssistant } from "@/components/AIAssistant";
+import { templatesFor } from "@/lib/templates";
 
 export const Route = createFileRoute("/editor/$id")({
   component: Editor,
@@ -303,7 +305,7 @@ function Editor() {
               type={inv.type}
               title={inv.title}
               message={inv.message}
-              onApply={(patch) => {
+              onApply={(patch: Partial<Invite>) => {
                 setInv((p) => p ? { ...p, ...patch } : p);
                 save(patch);
               }}
