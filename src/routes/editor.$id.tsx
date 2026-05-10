@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Save, Eye, Users, Globe, Gift, Trash2, Shuffle, Copy } from "lucide-react";
+import { ArrowLeft, Save, Eye, Users, Globe, Gift, Trash2, Shuffle, Copy, Upload, ImagePlus, Smile, Palette, Type, Music, Video } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { INVITE_TYPES, type InviteType, formatEventDate } from "@/lib/invites";
+import { INVITE_TYPES, type InviteType } from "@/lib/invites";
+import { THEMES, FONTS, FRAMES, STICKERS, type Sticker } from "@/lib/editor-presets";
+import { InvitePreview } from "@/components/InvitePreview";
+import { uploadInviteMedia } from "@/lib/upload";
 
 export const Route = createFileRoute("/editor/$id")({
   component: Editor,
@@ -26,6 +29,9 @@ type Invite = {
   published: boolean; rsvp_enabled: boolean;
   gift_list_url: string | null; dress_code: string | null; couple_story: string | null;
   playlist_url: string | null; baby_name: string | null; baby_theme: string | null;
+  font_family: string | null; accent_color: string | null;
+  background_music_url: string | null; video_url: string | null;
+  stickers: Sticker[]; frame_style: string | null;
 };
 
 type Rsvp = { id: string; guest_name: string; attending: boolean; guest_count: number; message: string | null; created_at: string };
@@ -62,7 +68,8 @@ function Editor() {
     if (!user) return;
     supabase.from("invites").select("*").eq("id", id).single().then(({ data, error }) => {
       if (error) { toast.error(error.message); navigate({ to: "/dashboard" }); return; }
-      setInv(data as Invite);
+      const d = data as Record<string, unknown>;
+      setInv({ ...(d as object), stickers: Array.isArray(d.stickers) ? (d.stickers as Sticker[]) : [] } as Invite);
     });
     supabase.from("rsvps").select("*").eq("invite_id", id).order("created_at", { ascending: false }).then(({ data }) => {
       setRsvps((data ?? []) as Rsvp[]);
@@ -90,11 +97,43 @@ function Editor() {
         gift_list_url: payload.gift_list_url, dress_code: payload.dress_code,
         couple_story: payload.couple_story, playlist_url: payload.playlist_url,
         baby_name: payload.baby_name, baby_theme: payload.baby_theme,
+        font_family: payload.font_family, accent_color: payload.accent_color,
+        background_music_url: payload.background_music_url, video_url: payload.video_url,
+        stickers: JSON.parse(JSON.stringify(payload.stickers ?? [])), frame_style: payload.frame_style,
       })
       .eq("id", inv.id);
     setSaving(false);
     if (error) toast.error(error.message);
     else { toast.success("Salvo!"); if (extra) setInv((p) => (p ? { ...p, ...extra } : p)); }
+  }
+
+  async function handleUpload(field: "cover_image_url" | "background_music_url" | "video_url", file: File) {
+    if (!user || !inv) return;
+    try {
+      toast.loading("Enviando arquivo…", { id: "up" });
+      const url = await uploadInviteMedia(file, user.id, inv.id);
+      update(field, url);
+      toast.success("Arquivo enviado!", { id: "up" });
+    } catch (e) {
+      toast.error((e as Error).message, { id: "up" });
+    }
+  }
+
+  function addSticker(emoji: string) {
+    const s: Sticker = {
+      id: Math.random().toString(36).slice(2, 9),
+      emoji, x: 50, y: 50, size: 40,
+    };
+    update("stickers", [...(inv?.stickers ?? []), s]);
+  }
+  function moveSticker(sid: string, x: number, y: number) {
+    update("stickers", (inv?.stickers ?? []).map((s) => s.id === sid ? { ...s, x, y } : s));
+  }
+  function removeSticker(sid: string) {
+    update("stickers", (inv?.stickers ?? []).filter((s) => s.id !== sid));
+  }
+  function resizeSticker(sid: string, size: number) {
+    update("stickers", (inv?.stickers ?? []).map((s) => s.id === sid ? { ...s, size } : s));
   }
 
   async function addParticipant(e: React.FormEvent<HTMLFormElement>) {
@@ -168,8 +207,11 @@ function Editor() {
       </div>
 
       <Tabs defaultValue="content">
-        <TabsList className="bg-secondary">
+        <TabsList className="bg-secondary flex-wrap">
           <TabsTrigger value="content">Conteúdo</TabsTrigger>
+          <TabsTrigger value="visual">Visual</TabsTrigger>
+          <TabsTrigger value="media">Mídia</TabsTrigger>
+          <TabsTrigger value="stickers">Stickers</TabsTrigger>
           <TabsTrigger value="extras">Extras</TabsTrigger>
           {isSecretSanta && <TabsTrigger value="santa">Amigo Secreto</TabsTrigger>}
           <TabsTrigger value="settings">Ajustes</TabsTrigger>
@@ -227,22 +269,251 @@ function Editor() {
               </div>
             </div>
 
-            {/* PREVIEW */}
-            <div className="glass rounded-3xl p-6">
-              <p className="mb-3 text-xs uppercase tracking-wider text-muted-foreground">Pré-visualização</p>
-              <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-nebula p-8 text-center stars">
-                {inv.cover_image_url ? (
-                  <img src={inv.cover_image_url} alt="" className="mx-auto mb-4 h-40 w-full rounded-xl object-cover" />
-                ) : null}
-                <p className="text-xs uppercase tracking-[0.3em] text-primary">
-                  {INVITE_TYPES.find((t) => t.value === inv.type)?.label}
-                </p>
-                <h2 className="mt-3 font-display text-3xl font-semibold">{inv.title || "Seu título aqui"}</h2>
-                {inv.host_names && <p className="mt-1 text-sm text-muted-foreground">{inv.host_names}</p>}
-                {inv.event_date && <p className="mt-4 text-sm">{formatEventDate(inv.event_date)}</p>}
-                {inv.location && <p className="mt-1 text-sm text-muted-foreground">{inv.location}</p>}
-                {inv.message && <p className="mx-auto mt-6 max-w-sm text-sm italic text-muted-foreground">“{inv.message}”</p>}
+            {/* PREVIEW (live) */}
+            <div className="glass rounded-3xl p-4 lg:sticky lg:top-4 lg:self-start">
+              <p className="mb-3 px-2 text-xs uppercase tracking-wider text-muted-foreground">Pré-visualização ao vivo</p>
+              <InvitePreview
+                type={inv.type}
+                title={inv.title}
+                host_names={inv.host_names}
+                event_date={inv.event_date}
+                location={inv.location}
+                message={inv.message}
+                cover_image_url={inv.cover_image_url}
+                video_url={inv.video_url}
+                background_music_url={inv.background_music_url}
+                theme={inv.theme}
+                font_family={inv.font_family}
+                accent_color={inv.accent_color}
+                frame_style={inv.frame_style}
+                stickers={inv.stickers}
+                onStickerMove={moveSticker}
+                compact
+              />
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* VISUAL — temas, fontes, cores, molduras */}
+        <TabsContent value="visual" className="mt-4">
+          <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
+            <div className="glass space-y-6 rounded-3xl p-6">
+              <div>
+                <Label className="mb-3 flex items-center gap-2"><Palette className="h-4 w-4 text-primary" /> Tema pronto</Label>
+                <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+                  {THEMES.map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => { update("theme", t.id); update("accent_color", t.accent); }}
+                      className={`group relative h-20 overflow-hidden rounded-xl border-2 transition ${inv.theme === t.id ? "border-primary shadow-glow" : "border-white/10 hover:border-white/30"}`}
+                      style={{ background: t.gradient }}
+                    >
+                      <span className="absolute inset-x-0 bottom-0 bg-black/40 py-1 text-[11px] text-white">{t.label}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
+
+              <div>
+                <Label className="mb-3 flex items-center gap-2"><Type className="h-4 w-4 text-primary" /> Fonte personalizada</Label>
+                <Select value={inv.font_family ?? "display"} onValueChange={(v) => update("font_family", v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {FONTS.map((f) => <SelectItem key={f.id} value={f.id}>{f.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="mb-3 block">Cor de destaque</Label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={inv.accent_color ?? "#22d3ee"}
+                    onChange={(e) => update("accent_color", e.target.value)}
+                    className="h-12 w-20 cursor-pointer rounded-lg border border-white/10 bg-transparent"
+                  />
+                  <Input
+                    value={inv.accent_color ?? ""}
+                    onChange={(e) => update("accent_color", e.target.value)}
+                    placeholder="#22d3ee"
+                    className="font-mono"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label className="mb-3 block">Moldura</Label>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {FRAMES.map((f) => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => update("frame_style", f.id)}
+                      className={`rounded-lg border px-3 py-2 text-sm transition ${(inv.frame_style ?? "none") === f.id ? "border-primary bg-primary/10" : "border-white/10 hover:border-white/30"}`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <Button onClick={() => save()} disabled={saving} className="bg-gradient-primary text-primary-foreground">
+                <Save className="mr-1 h-4 w-4" /> Salvar visual
+              </Button>
+            </div>
+
+            <div className="glass rounded-3xl p-4 lg:sticky lg:top-4 lg:self-start">
+              <InvitePreview
+                type={inv.type} title={inv.title} host_names={inv.host_names}
+                event_date={inv.event_date} location={inv.location} message={inv.message}
+                cover_image_url={inv.cover_image_url} video_url={inv.video_url}
+                background_music_url={inv.background_music_url}
+                theme={inv.theme} font_family={inv.font_family}
+                accent_color={inv.accent_color} frame_style={inv.frame_style}
+                stickers={inv.stickers} onStickerMove={moveSticker} compact
+              />
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* MÍDIA — uploads, vídeo, música */}
+        <TabsContent value="media" className="mt-4">
+          <div className="glass space-y-6 rounded-3xl p-6">
+            <div>
+              <Label className="mb-2 flex items-center gap-2"><ImagePlus className="h-4 w-4 text-primary" /> Imagem de capa</Label>
+              <div className="flex flex-wrap items-center gap-3">
+                <label className="cursor-pointer">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => e.target.files?.[0] && handleUpload("cover_image_url", e.target.files[0])}
+                  />
+                  <span className="inline-flex items-center gap-2 rounded-lg bg-gradient-primary px-4 py-2 text-sm font-medium text-primary-foreground">
+                    <Upload className="h-4 w-4" /> Enviar imagem
+                  </span>
+                </label>
+                <Input
+                  value={inv.cover_image_url ?? ""}
+                  onChange={(e) => update("cover_image_url", e.target.value)}
+                  placeholder="ou cole uma URL https://…"
+                  className="flex-1 min-w-[240px]"
+                />
+              </div>
+              {inv.cover_image_url && (
+                <img src={inv.cover_image_url} alt="" className="mt-3 h-40 w-full rounded-xl object-cover" />
+              )}
+            </div>
+
+            <div>
+              <Label className="mb-2 flex items-center gap-2"><Video className="h-4 w-4 text-primary" /> Vídeo (YouTube ou MP4)</Label>
+              <div className="flex flex-wrap items-center gap-3">
+                <label className="cursor-pointer">
+                  <input
+                    type="file"
+                    accept="video/*"
+                    className="hidden"
+                    onChange={(e) => e.target.files?.[0] && handleUpload("video_url", e.target.files[0])}
+                  />
+                  <span className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-4 py-2 text-sm">
+                    <Upload className="h-4 w-4" /> Enviar vídeo
+                  </span>
+                </label>
+                <Input
+                  value={inv.video_url ?? ""}
+                  onChange={(e) => update("video_url", e.target.value)}
+                  placeholder="https://youtube.com/watch?v=… ou .mp4"
+                  className="flex-1 min-w-[240px]"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label className="mb-2 flex items-center gap-2"><Music className="h-4 w-4 text-primary" /> Música de fundo (MP3)</Label>
+              <div className="flex flex-wrap items-center gap-3">
+                <label className="cursor-pointer">
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    className="hidden"
+                    onChange={(e) => e.target.files?.[0] && handleUpload("background_music_url", e.target.files[0])}
+                  />
+                  <span className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-4 py-2 text-sm">
+                    <Upload className="h-4 w-4" /> Enviar música
+                  </span>
+                </label>
+                <Input
+                  value={inv.background_music_url ?? ""}
+                  onChange={(e) => update("background_music_url", e.target.value)}
+                  placeholder="URL .mp3"
+                  className="flex-1 min-w-[240px]"
+                />
+              </div>
+              {inv.background_music_url && (
+                <audio src={inv.background_music_url} controls className="mt-3 w-full" />
+              )}
+            </div>
+
+            <Button onClick={() => save()} disabled={saving} className="bg-gradient-primary text-primary-foreground">
+              <Save className="mr-1 h-4 w-4" /> Salvar mídia
+            </Button>
+          </div>
+        </TabsContent>
+
+        {/* STICKERS / EMOJIS / ELEMENTOS */}
+        <TabsContent value="stickers" className="mt-4">
+          <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
+            <div className="glass space-y-4 rounded-3xl p-6">
+              <Label className="flex items-center gap-2"><Smile className="h-4 w-4 text-primary" /> Adicionar elemento</Label>
+              <div className="grid grid-cols-8 gap-2 sm:grid-cols-10">
+                {STICKERS.map((emoji) => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    onClick={() => addSticker(emoji)}
+                    className="rounded-lg bg-white/5 p-2 text-2xl transition hover:scale-110 hover:bg-white/15"
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">Arraste os stickers diretamente sobre a pré-visualização para reposicionar.</p>
+              {(inv.stickers ?? []).length > 0 && (
+                <div className="space-y-2 border-t border-white/10 pt-4">
+                  <Label className="text-xs">Itens no convite ({inv.stickers.length})</Label>
+                  {inv.stickers.map((s) => (
+                    <div key={s.id} className="flex items-center gap-3 rounded-lg bg-white/5 p-2">
+                      <span className="text-2xl">{s.emoji}</span>
+                      <input
+                        type="range" min={20} max={120} value={s.size}
+                        onChange={(e) => resizeSticker(s.id, Number(e.target.value))}
+                        className="flex-1"
+                      />
+                      <span className="w-10 text-xs text-muted-foreground">{s.size}px</span>
+                      <Button size="sm" variant="ghost" className="text-destructive" onClick={() => removeSticker(s.id)}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <Button onClick={() => save()} disabled={saving} className="bg-gradient-primary text-primary-foreground">
+                <Save className="mr-1 h-4 w-4" /> Salvar stickers
+              </Button>
+            </div>
+
+            <div className="glass rounded-3xl p-4 lg:sticky lg:top-4 lg:self-start">
+              <InvitePreview
+                type={inv.type} title={inv.title} host_names={inv.host_names}
+                event_date={inv.event_date} location={inv.location} message={inv.message}
+                cover_image_url={inv.cover_image_url} video_url={inv.video_url}
+                background_music_url={inv.background_music_url}
+                theme={inv.theme} font_family={inv.font_family}
+                accent_color={inv.accent_color} frame_style={inv.frame_style}
+                stickers={inv.stickers} onStickerMove={moveSticker} compact
+              />
             </div>
           </div>
         </TabsContent>

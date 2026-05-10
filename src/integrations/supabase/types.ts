@@ -16,14 +16,18 @@ export type Database = {
     Tables: {
       invites: {
         Row: {
+          accent_color: string | null
           baby_name: string | null
           baby_theme: string | null
+          background_music_url: string | null
           couple_story: string | null
           cover_image_url: string | null
           created_at: string
           description: string | null
           dress_code: string | null
           event_date: string | null
+          font_family: string | null
+          frame_style: string | null
           gift_list_url: string | null
           host_names: string | null
           id: string
@@ -34,22 +38,28 @@ export type Database = {
           published: boolean
           rsvp_enabled: boolean
           slug: string
+          stickers: Json
           theme: string
           title: string
           type: Database["public"]["Enums"]["invite_type"]
           updated_at: string
           user_id: string
+          video_url: string | null
           view_count: number
         }
         Insert: {
+          accent_color?: string | null
           baby_name?: string | null
           baby_theme?: string | null
+          background_music_url?: string | null
           couple_story?: string | null
           cover_image_url?: string | null
           created_at?: string
           description?: string | null
           dress_code?: string | null
           event_date?: string | null
+          font_family?: string | null
+          frame_style?: string | null
           gift_list_url?: string | null
           host_names?: string | null
           id?: string
@@ -60,22 +70,28 @@ export type Database = {
           published?: boolean
           rsvp_enabled?: boolean
           slug: string
+          stickers?: Json
           theme?: string
           title: string
           type: Database["public"]["Enums"]["invite_type"]
           updated_at?: string
           user_id: string
+          video_url?: string | null
           view_count?: number
         }
         Update: {
+          accent_color?: string | null
           baby_name?: string | null
           baby_theme?: string | null
+          background_music_url?: string | null
           couple_story?: string | null
           cover_image_url?: string | null
           created_at?: string
           description?: string | null
           dress_code?: string | null
           event_date?: string | null
+          font_family?: string | null
+          frame_style?: string | null
           gift_list_url?: string | null
           host_names?: string | null
           id?: string
@@ -86,11 +102,13 @@ export type Database = {
           published?: boolean
           rsvp_enabled?: boolean
           slug?: string
+          stickers?: Json
           theme?: string
           title?: string
           type?: Database["public"]["Enums"]["invite_type"]
           updated_at?: string
           user_id?: string
+          video_url?: string | null
           view_count?: number
         }
         Relationships: []

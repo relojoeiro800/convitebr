@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
-  Calendar, MapPin, Heart, Send, ExternalLink, Gift, Music, Shirt, Baby, BookOpen, QrCode as QrIcon,
+  Calendar, MapPin, Heart, Send, ExternalLink, Gift, Music as MusicIcon, Shirt, Baby, BookOpen, QrCode as QrIcon, Volume2, VolumeX,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Countdown } from "@/components/Countdown";
 import { QRCode } from "@/components/QRCode";
+import { VideoEmbed } from "@/components/InvitePreview";
+import { fontCss, themePreset, FRAMES, type Sticker } from "@/lib/editor-presets";
 import { INVITE_TYPES, formatEventDate, type InviteType } from "@/lib/invites";
 
 export const Route = createFileRoute("/convite/$slug")({
@@ -25,6 +27,9 @@ type Invite = {
   cover_image_url: string | null; rsvp_enabled: boolean;
   gift_list_url: string | null; dress_code: string | null; couple_story: string | null;
   playlist_url: string | null; baby_name: string | null; baby_theme: string | null;
+  theme: string; font_family: string | null; accent_color: string | null;
+  background_music_url: string | null; video_url: string | null;
+  stickers: Sticker[]; frame_style: string | null;
 };
 
 function PublicInvite() {
@@ -33,24 +38,34 @@ function PublicInvite() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [musicOn, setMusicOn] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
     supabase
       .from("invites")
-      .select("id,slug,type,title,host_names,event_date,location,location_url,description,message,cover_image_url,rsvp_enabled,gift_list_url,dress_code,couple_story,playlist_url,baby_name,baby_theme")
+      .select("*")
       .eq("slug", slug)
       .eq("published", true)
       .maybeSingle()
       .then(({ data }) => {
-        setInv(data as Invite | null);
+        const d = data as Record<string, unknown> | null;
+        const parsed = d ? ({ ...(d as object), stickers: Array.isArray(d.stickers) ? (d.stickers as Sticker[]) : [] } as Invite) : null;
+        setInv(parsed);
         setLoading(false);
-        if (data?.title) document.title = `${data.title} — Convite BR`;
-        if (data?.id) {
-          // Fire-and-forget view increment
+        if (parsed?.title) document.title = `${parsed.title} — Convite BR`;
+        if (parsed?.id) {
           supabase.rpc("increment_invite_view", { _slug: slug });
         }
       });
   }, [slug]);
+
+  function toggleMusic() {
+    const a = audioRef.current;
+    if (!a) return;
+    if (musicOn) { a.pause(); setMusicOn(false); }
+    else { a.play().then(() => setMusicOn(true)).catch(() => toast.error("Não foi possível reproduzir")); }
+  }
 
   async function handleRsvp(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -82,30 +97,58 @@ function PublicInvite() {
   }
 
   const typeMeta = INVITE_TYPES.find((t) => t.value === inv.type);
+  const theme = themePreset(inv.theme);
+  const accent = inv.accent_color || theme.accent;
+  const frame = FRAMES.find((f) => f.id === (inv.frame_style ?? "none")) ?? FRAMES[0];
 
   return (
-    <main className="relative mx-auto max-w-2xl px-4 py-12">
+    <main className="relative mx-auto max-w-2xl px-4 py-12" style={{ fontFamily: fontCss(inv.font_family) }}>
       <div className="stars absolute inset-0 -z-10" />
-      <article className="glass relative overflow-hidden rounded-[2rem] shadow-elegant">
+      {inv.background_music_url && (
+        <>
+          <audio ref={audioRef} src={inv.background_music_url} loop preload="auto" />
+          <button
+            onClick={toggleMusic}
+            className="fixed right-4 top-4 z-50 rounded-full bg-card/80 p-3 shadow-elegant backdrop-blur transition hover:scale-110"
+            aria-label="Música de fundo"
+          >
+            {musicOn ? <Volume2 className="h-5 w-5 text-primary" /> : <VolumeX className="h-5 w-5" />}
+          </button>
+        </>
+      )}
+      <article className={`relative overflow-hidden rounded-[2rem] shadow-elegant ${frame.css ?? ""}`} style={{ background: theme.gradient }}>
         {/* COVER */}
-        <div className="relative h-56 overflow-hidden bg-gradient-primary sm:h-72">
+        <div className="relative h-56 overflow-hidden sm:h-72">
           {inv.cover_image_url ? (
             <img src={inv.cover_image_url} alt={inv.title} className="h-full w-full object-cover" />
           ) : (
-            <div className="absolute inset-0 bg-gradient-aurora opacity-90" />
+            <div className="absolute inset-0" style={{ background: theme.gradient, opacity: 0.9 }} />
           )}
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-card to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 to-transparent" />
         </div>
 
-        <div className="px-6 pb-10 pt-6 text-center sm:px-12">
-          <p className="text-xs uppercase tracking-[0.35em] text-primary">{typeMeta?.label}</p>
-          <h1 className="mt-3 font-display text-4xl font-semibold leading-tight sm:text-5xl">{inv.title}</h1>
-          {inv.host_names && <p className="mt-2 text-base text-muted-foreground">{inv.host_names}</p>}
+        <div className="relative px-6 pb-10 pt-6 text-center text-white sm:px-12">
+          {/* Stickers overlay */}
+          {(inv.stickers ?? []).map((s) => (
+            <span key={s.id} className="pointer-events-none absolute select-none"
+              style={{ left: `${s.x}%`, top: `${s.y}%`, fontSize: `${s.size}px`, transform: "translate(-50%,-50%)" }}>
+              {s.emoji}
+            </span>
+          ))}
+          <p className="text-xs uppercase tracking-[0.35em]" style={{ color: accent }}>{typeMeta?.label}</p>
+          <h1 className="mt-3 text-4xl font-semibold leading-tight sm:text-5xl">{inv.title}</h1>
+          {inv.host_names && <p className="mt-2 text-base opacity-80">{inv.host_names}</p>}
 
           {inv.message && (
-            <p className="mx-auto mt-8 max-w-md font-display text-xl italic text-foreground/90">
-              “{inv.message}”
+            <p className="mx-auto mt-8 max-w-md text-xl italic opacity-95">
+              "{inv.message}"
             </p>
+          )}
+
+          {inv.video_url && (
+            <div className="mx-auto mt-8 max-w-md">
+              <VideoEmbed url={inv.video_url} />
+            </div>
           )}
 
           <div className="mx-auto mt-10 grid max-w-md gap-3 text-left">
@@ -223,7 +266,7 @@ function PublicInvite() {
                 rel="noreferrer"
                 className="glass flex items-center gap-3 rounded-2xl p-4 transition hover:shadow-glow"
               >
-                <Music className="h-5 w-5 text-primary" />
+                <MusicIcon className="h-5 w-5 text-primary" />
                 <div className="flex-1 text-left">
                   <p className="text-xs uppercase tracking-wider text-muted-foreground">
                     Playlist do evento
