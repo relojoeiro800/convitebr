@@ -1,7 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Share2, Edit3, Trash2, Eye, ExternalLink } from "lucide-react";
+import {
+  Plus, Share2, Edit3, Trash2, Eye, ExternalLink,
+  FileText, Send, Users, Crown,
+} from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -26,6 +29,7 @@ type Invite = {
   title: string;
   event_date: string | null;
   published: boolean;
+  view_count: number;
   created_at: string;
 };
 
@@ -33,6 +37,7 @@ function Dashboard() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [invites, setInvites] = useState<Invite[]>([]);
+  const [rsvpCount, setRsvpCount] = useState(0);
   const [open, setOpen] = useState(false);
   const [creating, setCreating] = useState(false);
 
@@ -44,13 +49,25 @@ function Dashboard() {
     if (!user) return;
     supabase
       .from("invites")
-      .select("id,slug,type,title,event_date,published,created_at")
+      .select("id,slug,type,title,event_date,published,view_count,created_at")
       .order("created_at", { ascending: false })
       .then(({ data, error }) => {
         if (error) toast.error(error.message);
         else setInvites((data ?? []) as Invite[]);
       });
+
+    supabase
+      .from("rsvps")
+      .select("id", { count: "exact", head: true })
+      .then(({ count }) => setRsvpCount(count ?? 0));
   }, [user]);
+
+  const stats = useMemo(() => {
+    const total = invites.length;
+    const published = invites.filter((i) => i.published).length;
+    const views = invites.reduce((acc, i) => acc + (i.view_count || 0), 0);
+    return { total, published, views };
+  }, [invites]);
 
   async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -131,6 +148,46 @@ function Dashboard() {
             </form>
           </DialogContent>
         </Dialog>
+      </div>
+
+      {/* STATS */}
+      <div className="mb-10 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {[
+          { icon: FileText, label: "Convites criados", value: stats.total },
+          { icon: Send, label: "Publicados", value: stats.published },
+          { icon: Eye, label: "Visualizações", value: stats.views },
+          { icon: Users, label: "Confirmações", value: rsvpCount },
+        ].map((s) => (
+          <div key={s.label} className="glass rounded-3xl p-5">
+            <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-primary text-primary-foreground shadow-glow">
+              <s.icon className="h-5 w-5" />
+            </div>
+            <div className="mt-4 font-display text-3xl font-semibold tabular-nums">
+              {s.value.toLocaleString("pt-BR")}
+            </div>
+            <div className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">
+              {s.label}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* PLANO */}
+      <div className="mb-8 glass flex flex-wrap items-center justify-between gap-4 rounded-3xl p-5">
+        <div className="flex items-center gap-3">
+          <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-primary text-primary-foreground">
+            <Crown className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-sm font-medium">Plano Essencial</p>
+            <p className="text-xs text-muted-foreground">
+              1 convite ativo · faça upgrade para recursos premium
+            </p>
+          </div>
+        </div>
+        <Button asChild variant="outline" size="sm" className="border-white/15 bg-white/5">
+          <Link to="/">Ver planos</Link>
+        </Button>
       </div>
 
       {invites.length === 0 ? (

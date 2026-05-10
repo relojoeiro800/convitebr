@@ -33,6 +33,7 @@ export type Database = {
           type: Database["public"]["Enums"]["invite_type"]
           updated_at: string
           user_id: string
+          view_count: number
         }
         Insert: {
           cover_image_url?: string | null
@@ -52,6 +53,7 @@ export type Database = {
           type: Database["public"]["Enums"]["invite_type"]
           updated_at?: string
           user_id: string
+          view_count?: number
         }
         Update: {
           cover_image_url?: string | null
@@ -71,6 +73,7 @@ export type Database = {
           type?: Database["public"]["Enums"]["invite_type"]
           updated_at?: string
           user_id?: string
+          view_count?: number
         }
         Relationships: []
       }
@@ -141,7 +144,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_invite_view: { Args: { _slug: string }; Returns: undefined }
     }
     Enums: {
       invite_type:

@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -123,6 +123,14 @@ function AuthPage() {
                 <Button disabled={loading} className="w-full bg-gradient-primary text-primary-foreground">
                   Entrar
                 </Button>
+                <div className="text-center">
+                  <Link
+                    to="/forgot-password"
+                    className="text-xs text-muted-foreground hover:text-primary"
+                  >
+                    Esqueci minha senha
+                  </Link>
+                </div>
               </form>
             </TabsContent>
 
