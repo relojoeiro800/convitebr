@@ -41,6 +41,13 @@ function Dashboard() {
   const [rsvpCount, setRsvpCount] = useState(0);
   const [open, setOpen] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle()
+      .then(({ data }) => setIsAdmin(!!data));
+  }, [user]);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });
