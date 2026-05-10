@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TemplatesRouteImport } from './routes/templates'
+import { Route as SegurancaRouteImport } from './routes/seguranca'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as PlanosRouteImport } from './routes/planos'
@@ -29,6 +30,11 @@ import { Route as CheckinIdRouteImport } from './routes/checkin.$id'
 const TemplatesRoute = TemplatesRouteImport.update({
   id: '/templates',
   path: '/templates',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SegurancaRoute = SegurancaRouteImport.update({
+  id: '/seguranca',
+  path: '/seguranca',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -117,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/planos': typeof PlanosRoute
   '/relatorios': typeof RelatoriosRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/seguranca': typeof SegurancaRoute
   '/templates': typeof TemplatesRoute
   '/checkin/$id': typeof CheckinIdRoute
   '/convite/$slug': typeof ConviteSlugRoute
@@ -135,6 +142,7 @@ export interface FileRoutesByTo {
   '/planos': typeof PlanosRoute
   '/relatorios': typeof RelatoriosRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/seguranca': typeof SegurancaRoute
   '/templates': typeof TemplatesRoute
   '/checkin/$id': typeof CheckinIdRoute
   '/convite/$slug': typeof ConviteSlugRoute
@@ -154,6 +162,7 @@ export interface FileRoutesById {
   '/planos': typeof PlanosRoute
   '/relatorios': typeof RelatoriosRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/seguranca': typeof SegurancaRoute
   '/templates': typeof TemplatesRoute
   '/checkin/$id': typeof CheckinIdRoute
   '/convite/$slug': typeof ConviteSlugRoute
@@ -174,6 +183,7 @@ export interface FileRouteTypes {
     | '/planos'
     | '/relatorios'
     | '/reset-password'
+    | '/seguranca'
     | '/templates'
     | '/checkin/$id'
     | '/convite/$slug'
@@ -192,6 +202,7 @@ export interface FileRouteTypes {
     | '/planos'
     | '/relatorios'
     | '/reset-password'
+    | '/seguranca'
     | '/templates'
     | '/checkin/$id'
     | '/convite/$slug'
@@ -210,6 +221,7 @@ export interface FileRouteTypes {
     | '/planos'
     | '/relatorios'
     | '/reset-password'
+    | '/seguranca'
     | '/templates'
     | '/checkin/$id'
     | '/convite/$slug'
@@ -229,6 +241,7 @@ export interface RootRouteChildren {
   PlanosRoute: typeof PlanosRoute
   RelatoriosRoute: typeof RelatoriosRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SegurancaRoute: typeof SegurancaRoute
   TemplatesRoute: typeof TemplatesRoute
   CheckinIdRoute: typeof CheckinIdRoute
   ConviteSlugRoute: typeof ConviteSlugRoute
@@ -245,6 +258,13 @@ declare module '@tanstack/react-router' {
       path: '/templates'
       fullPath: '/templates'
       preLoaderRoute: typeof TemplatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/seguranca': {
+      id: '/seguranca'
+      path: '/seguranca'
+      fullPath: '/seguranca'
+      preLoaderRoute: typeof SegurancaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -365,6 +385,7 @@ const rootRouteChildren: RootRouteChildren = {
   PlanosRoute: PlanosRoute,
   RelatoriosRoute: RelatoriosRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SegurancaRoute: SegurancaRoute,
   TemplatesRoute: TemplatesRoute,
   CheckinIdRoute: CheckinIdRoute,
   ConviteSlugRoute: ConviteSlugRoute,
