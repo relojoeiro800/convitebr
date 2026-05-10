@@ -120,12 +120,18 @@ function Dashboard() {
           <h1 className="font-display text-4xl font-semibold">Meus convites</h1>
           <p className="mt-1 text-sm text-muted-foreground">Crie, edite e compartilhe seus convites</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-gradient-primary text-primary-foreground shadow-glow">
-              <Plus className="mr-2 h-4 w-4" /> Novo convite
+        <div className="flex items-center gap-2">
+          {isAdmin && (
+            <Button asChild variant="outline">
+              <Link to="/admin"><Crown className="mr-2 h-4 w-4" />Admin</Link>
             </Button>
-          </DialogTrigger>
+          )}
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-gradient-primary text-primary-foreground shadow-glow">
+                <Plus className="mr-2 h-4 w-4" /> Novo convite
+              </Button>
+            </DialogTrigger>
           <DialogContent className="glass">
             <DialogHeader>
               <DialogTitle className="font-display text-2xl">Novo convite</DialogTitle>
