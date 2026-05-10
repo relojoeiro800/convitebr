@@ -15,6 +15,7 @@ import { QRCode } from "@/components/QRCode";
 import { VideoEmbed } from "@/components/InvitePreview";
 import { fontCss, themePreset, FRAMES, type Sticker } from "@/lib/editor-presets";
 import { INVITE_TYPES, formatEventDate, type InviteType } from "@/lib/invites";
+import { ShareInvite } from "@/components/ShareInvite";
 
 export const Route = createFileRoute("/convite/$slug")({
   component: PublicInvite,
@@ -66,6 +67,25 @@ function PublicInvite() {
     if (musicOn) { a.pause(); setMusicOn(false); }
     else { a.play().then(() => setMusicOn(true)).catch(() => toast.error("Não foi possível reproduzir")); }
   }
+
+  // Try autoplay on first user interaction (browsers block silent autoplay)
+  useEffect(() => {
+    if (!inv?.background_music_url) return;
+    const tryPlay = () => {
+      const a = audioRef.current;
+      if (a && a.paused) {
+        a.play().then(() => setMusicOn(true)).catch(() => { /* ignore */ });
+      }
+      window.removeEventListener("pointerdown", tryPlay);
+      window.removeEventListener("keydown", tryPlay);
+    };
+    window.addEventListener("pointerdown", tryPlay, { once: true });
+    window.addEventListener("keydown", tryPlay, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", tryPlay);
+      window.removeEventListener("keydown", tryPlay);
+    };
+  }, [inv?.background_music_url]);
 
   async function handleRsvp(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -119,7 +139,11 @@ function PublicInvite() {
           </button>
         </>
       )}
-      <article className={`relative overflow-hidden rounded-[2rem] shadow-elegant ${frame.css ?? ""}`} style={{ background: theme.gradient }}>
+      <article className={`relative animate-scale-in overflow-hidden rounded-[2rem] shadow-elegant ${frame.css ?? ""}`} style={{ background: theme.gradient }}>
+        <div aria-hidden className="pointer-events-none absolute -top-20 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full opacity-40 blur-3xl"
+             style={{ background: `radial-gradient(circle, ${accent}, transparent 70%)` }} />
+        <div aria-hidden className="pointer-events-none absolute -bottom-32 right-0 h-80 w-80 rounded-full opacity-30 blur-3xl"
+             style={{ background: `radial-gradient(circle, ${accent}, transparent 70%)` }} />
         {/* COVER */}
         <div className="relative h-56 overflow-hidden sm:h-72">
           {inv.cover_image_url ? (
@@ -287,6 +311,13 @@ function PublicInvite() {
               <QrIcon className="h-4 w-4 text-primary" /> Acesso rápido
             </div>
             <QRCode value={typeof window !== "undefined" ? window.location.href : ""} size={160} />
+            <div className="mt-4">
+              <ShareInvite
+                url={typeof window !== "undefined" ? window.location.href : ""}
+                title={inv.title}
+                message={inv.message ?? undefined}
+              />
+            </div>
           </div>
 
 

@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { ShareInvite } from "@/components/ShareInvite";
 import { INVITE_TYPES, type InviteType, slugify, inviteTypeLabel, formatEventDate } from "@/lib/invites";
 
 export const Route = createFileRoute("/dashboard")({
@@ -230,9 +231,10 @@ function Dashboard() {
                   </Link>
                 </Button>
                 {inv.published && (
-                  <Button onClick={() => handleShare(inv.slug)} size="sm" variant="outline" className="border-white/15 bg-white/5">
-                    <Share2 className="mr-1 h-3.5 w-3.5" /> Compartilhar
-                  </Button>
+                  <ShareInvite
+                    url={`${typeof window !== "undefined" ? window.location.origin : ""}/convite/${inv.slug}`}
+                    title={inv.title}
+                  />
                 )}
                 <Button onClick={() => handleDelete(inv.id)} size="sm" variant="ghost" className="ml-auto text-destructive">
                   <Trash2 className="h-3.5 w-3.5" />
