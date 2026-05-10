@@ -161,7 +161,8 @@ function Dashboard() {
               </DialogFooter>
             </form>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       {/* STATS */}
