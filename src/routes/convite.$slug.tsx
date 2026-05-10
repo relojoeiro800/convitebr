@@ -346,6 +346,12 @@ function PublicInvite() {
                 </div>
               ) : (
                 <form onSubmit={handleRsvp} className="mx-auto mt-6 max-w-md space-y-4">
+                  {/* Honeypot anti-spam: hidden from users, bots fill it */}
+                  <input
+                    type="text" name="website" tabIndex={-1} autoComplete="off"
+                    aria-hidden="true"
+                    style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }}
+                  />
                   <div className="space-y-1.5">
                     <Label htmlFor="name">Seu nome</Label>
                     <Input id="name" name="name" required maxLength={80} />
