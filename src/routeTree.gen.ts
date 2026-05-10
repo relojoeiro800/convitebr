@@ -19,6 +19,7 @@ import { Route as RsvpTokenRouteImport } from './routes/rsvp.$token'
 import { Route as PainelIdRouteImport } from './routes/painel.$id'
 import { Route as EditorIdRouteImport } from './routes/editor.$id'
 import { Route as ConviteSlugRouteImport } from './routes/convite.$slug'
+import { Route as CheckinIdRouteImport } from './routes/checkin.$id'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -70,6 +71,11 @@ const ConviteSlugRoute = ConviteSlugRouteImport.update({
   path: '/convite/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CheckinIdRoute = CheckinIdRouteImport.update({
+  id: '/checkin/$id',
+  path: '/checkin/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -77,6 +83,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/checkin/$id': typeof CheckinIdRoute
   '/convite/$slug': typeof ConviteSlugRoute
   '/editor/$id': typeof EditorIdRoute
   '/painel/$id': typeof PainelIdRoute
@@ -89,6 +96,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/checkin/$id': typeof CheckinIdRoute
   '/convite/$slug': typeof ConviteSlugRoute
   '/editor/$id': typeof EditorIdRoute
   '/painel/$id': typeof PainelIdRoute
@@ -102,6 +110,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/checkin/$id': typeof CheckinIdRoute
   '/convite/$slug': typeof ConviteSlugRoute
   '/editor/$id': typeof EditorIdRoute
   '/painel/$id': typeof PainelIdRoute
@@ -116,6 +125,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/forgot-password'
     | '/reset-password'
+    | '/checkin/$id'
     | '/convite/$slug'
     | '/editor/$id'
     | '/painel/$id'
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/forgot-password'
     | '/reset-password'
+    | '/checkin/$id'
     | '/convite/$slug'
     | '/editor/$id'
     | '/painel/$id'
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/forgot-password'
     | '/reset-password'
+    | '/checkin/$id'
     | '/convite/$slug'
     | '/editor/$id'
     | '/painel/$id'
@@ -153,6 +165,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  CheckinIdRoute: typeof CheckinIdRoute
   ConviteSlugRoute: typeof ConviteSlugRoute
   EditorIdRoute: typeof EditorIdRoute
   PainelIdRoute: typeof PainelIdRoute
@@ -232,6 +245,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConviteSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/checkin/$id': {
+      id: '/checkin/$id'
+      path: '/checkin/$id'
+      fullPath: '/checkin/$id'
+      preLoaderRoute: typeof CheckinIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -241,6 +261,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  CheckinIdRoute: CheckinIdRoute,
   ConviteSlugRoute: ConviteSlugRoute,
   EditorIdRoute: EditorIdRoute,
   PainelIdRoute: PainelIdRoute,

@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
-  ArrowLeft, Users, CheckCircle2, XCircle, Clock, FileSpreadsheet, FileText, Search, Mail, Phone,
+  ArrowLeft, Users, CheckCircle2, XCircle, Clock, FileSpreadsheet, FileText, Search, Mail, Phone, QrCode,
 } from "lucide-react";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend,
@@ -126,7 +126,10 @@ function PainelPage() {
           <h1 className="font-display text-3xl font-semibold">Painel de presenças</h1>
           <p className="text-sm text-muted-foreground">{inv.title}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button asChild className="bg-gradient-primary text-primary-foreground shadow-glow">
+            <Link to="/checkin/$id" params={{ id: inv.id }}><QrCode className="mr-2 h-4 w-4" /> Check-in</Link>
+          </Button>
           <Button variant="outline" onClick={exportExcel}><FileSpreadsheet className="mr-2 h-4 w-4" /> Excel</Button>
           <Button variant="outline" onClick={exportPdf}><FileText className="mr-2 h-4 w-4" /> PDF</Button>
         </div>
