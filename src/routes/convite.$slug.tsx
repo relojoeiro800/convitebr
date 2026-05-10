@@ -39,6 +39,10 @@ function PublicInvite() {
         setInv(data as Invite | null);
         setLoading(false);
         if (data?.title) document.title = `${data.title} — Convite BR`;
+        if (data?.id) {
+          // Fire-and-forget view increment
+          supabase.rpc("increment_invite_view", { _slug: slug });
+        }
       });
   }, [slug]);
 
