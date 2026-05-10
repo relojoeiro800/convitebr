@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Save, Eye, Users, Globe } from "lucide-react";
+import { ArrowLeft, Save, Eye, Users, Globe, Gift, Trash2, Shuffle, Copy } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -24,9 +24,16 @@ type Invite = {
   location: string | null; location_url: string | null; description: string | null;
   message: string | null; theme: string; cover_image_url: string | null;
   published: boolean; rsvp_enabled: boolean;
+  gift_list_url: string | null; dress_code: string | null; couple_story: string | null;
+  playlist_url: string | null; baby_name: string | null; baby_theme: string | null;
 };
 
 type Rsvp = { id: string; guest_name: string; attending: boolean; guest_count: number; message: string | null; created_at: string };
+
+type Participant = {
+  id: string; name: string; email: string | null; phone: string | null;
+  reveal_token: string; assigned_to_id: string | null;
+};
 
 function Editor() {
   const { id } = Route.useParams();
