@@ -87,10 +87,16 @@ function PublicInvite() {
     };
   }, [inv?.background_music_url]);
 
+  const formMountedAt = useRef<number>(Date.now());
   async function handleRsvp(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!inv) return;
     const fd = new FormData(e.currentTarget);
+    // Anti-spam: honeypot field (must be empty) + minimum fill time (>2s)
+    if (String(fd.get("website") || "").length > 0) return;
+    if (Date.now() - formMountedAt.current < 2000) {
+      return toast.error("Aguarde um instante antes de enviar");
+    }
     const guest_name = String(fd.get("name") || "").trim().slice(0, 80);
     const attending = fd.get("attending") === "yes";
     const guest_count = Math.max(1, Math.min(20, Number(fd.get("guest_count") || 1)));
