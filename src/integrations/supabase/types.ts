@@ -143,6 +143,8 @@ export type Database = {
       rsvps: {
         Row: {
           attending: boolean
+          checked_in_at: string | null
+          checked_in_by: string | null
           created_at: string
           email: string | null
           guest_count: number
@@ -156,6 +158,8 @@ export type Database = {
         }
         Insert: {
           attending?: boolean
+          checked_in_at?: string | null
+          checked_in_by?: string | null
           created_at?: string
           email?: string | null
           guest_count?: number
@@ -169,6 +173,8 @@ export type Database = {
         }
         Update: {
           attending?: boolean
+          checked_in_at?: string | null
+          checked_in_by?: string | null
           created_at?: string
           email?: string | null
           guest_count?: number
@@ -243,6 +249,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_in_rsvp: {
+        Args: { _token: string }
+        Returns: {
+          already: boolean
+          attending: boolean
+          checked_in_at: string
+          guest_count: number
+          guest_name: string
+          id: string
+          invite_id: string
+          invite_title: string
+        }[]
+      }
       draw_secret_santa: { Args: { _invite_id: string }; Returns: number }
       get_rsvp_by_token: {
         Args: { _token: string }
