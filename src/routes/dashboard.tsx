@@ -150,6 +150,46 @@ function Dashboard() {
         </Dialog>
       </div>
 
+      {/* STATS */}
+      <div className="mb-10 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {[
+          { icon: FileText, label: "Convites criados", value: stats.total },
+          { icon: Send, label: "Publicados", value: stats.published },
+          { icon: Eye, label: "Visualizações", value: stats.views },
+          { icon: Users, label: "Confirmações", value: rsvpCount },
+        ].map((s) => (
+          <div key={s.label} className="glass rounded-3xl p-5">
+            <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-primary text-primary-foreground shadow-glow">
+              <s.icon className="h-5 w-5" />
+            </div>
+            <div className="mt-4 font-display text-3xl font-semibold tabular-nums">
+              {s.value.toLocaleString("pt-BR")}
+            </div>
+            <div className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">
+              {s.label}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* PLANO */}
+      <div className="mb-8 glass flex flex-wrap items-center justify-between gap-4 rounded-3xl p-5">
+        <div className="flex items-center gap-3">
+          <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-primary text-primary-foreground">
+            <Crown className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-sm font-medium">Plano Essencial</p>
+            <p className="text-xs text-muted-foreground">
+              1 convite ativo · faça upgrade para recursos premium
+            </p>
+          </div>
+        </div>
+        <Button asChild variant="outline" size="sm" className="border-white/15 bg-white/5">
+          <Link to="/">Ver planos</Link>
+        </Button>
+      </div>
+
       {invites.length === 0 ? (
         <div className="glass rounded-3xl p-12 text-center">
           <p className="text-muted-foreground">Você ainda não criou nenhum convite.</p>
