@@ -311,6 +311,13 @@ function PublicInvite() {
               <QrIcon className="h-4 w-4 text-primary" /> Acesso rápido
             </div>
             <QRCode value={typeof window !== "undefined" ? window.location.href : ""} size={160} />
+            <div className="mt-4">
+              <ShareInvite
+                url={typeof window !== "undefined" ? window.location.href : ""}
+                title={inv.title}
+                message={inv.message ?? undefined}
+              />
+            </div>
           </div>
 
 
