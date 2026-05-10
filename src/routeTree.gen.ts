@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PlanosRouteImport } from './routes/planos'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
@@ -23,6 +24,11 @@ import { Route as EditorIdRouteImport } from './routes/editor.$id'
 import { Route as ConviteSlugRouteImport } from './routes/convite.$slug'
 import { Route as CheckinIdRouteImport } from './routes/checkin.$id'
 
+const TemplatesRoute = TemplatesRouteImport.update({
+  id: '/templates',
+  path: '/templates',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -97,6 +103,7 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/planos': typeof PlanosRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/templates': typeof TemplatesRoute
   '/checkin/$id': typeof CheckinIdRoute
   '/convite/$slug': typeof ConviteSlugRoute
   '/editor/$id': typeof EditorIdRoute
@@ -112,6 +119,7 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/planos': typeof PlanosRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/templates': typeof TemplatesRoute
   '/checkin/$id': typeof CheckinIdRoute
   '/convite/$slug': typeof ConviteSlugRoute
   '/editor/$id': typeof EditorIdRoute
@@ -128,6 +136,7 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/planos': typeof PlanosRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/templates': typeof TemplatesRoute
   '/checkin/$id': typeof CheckinIdRoute
   '/convite/$slug': typeof ConviteSlugRoute
   '/editor/$id': typeof EditorIdRoute
@@ -145,6 +154,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/planos'
     | '/reset-password'
+    | '/templates'
     | '/checkin/$id'
     | '/convite/$slug'
     | '/editor/$id'
@@ -160,6 +170,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/planos'
     | '/reset-password'
+    | '/templates'
     | '/checkin/$id'
     | '/convite/$slug'
     | '/editor/$id'
@@ -175,6 +186,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/planos'
     | '/reset-password'
+    | '/templates'
     | '/checkin/$id'
     | '/convite/$slug'
     | '/editor/$id'
@@ -191,6 +203,7 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   PlanosRoute: typeof PlanosRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  TemplatesRoute: typeof TemplatesRoute
   CheckinIdRoute: typeof CheckinIdRoute
   ConviteSlugRoute: typeof ConviteSlugRoute
   EditorIdRoute: typeof EditorIdRoute
@@ -201,6 +214,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/templates': {
+      id: '/templates'
+      path: '/templates'
+      fullPath: '/templates'
+      preLoaderRoute: typeof TemplatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -303,6 +323,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   PlanosRoute: PlanosRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  TemplatesRoute: TemplatesRoute,
   CheckinIdRoute: CheckinIdRoute,
   ConviteSlugRoute: ConviteSlugRoute,
   EditorIdRoute: EditorIdRoute,
