@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   Plus, Share2, Edit3, Trash2, Eye, ExternalLink,
-  FileText, Send, Users, Crown, BarChart3,
+  FileText, Send, Users, Crown, BarChart3, ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
