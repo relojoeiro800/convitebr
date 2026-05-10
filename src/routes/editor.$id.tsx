@@ -33,7 +33,7 @@ type Invite = {
   playlist_url: string | null; baby_name: string | null; baby_theme: string | null;
   font_family: string | null; accent_color: string | null;
   background_music_url: string | null; video_url: string | null;
-  stickers: Sticker[]; frame_style: string | null;
+  stickers: Sticker[]; frame_style: string | null; max_guests: number | null;
 };
 
 type Rsvp = { id: string; guest_name: string; attending: boolean; guest_count: number; message: string | null; created_at: string };
@@ -782,6 +782,18 @@ function Editor() {
               </div>
               <Switch checked={inv.rsvp_enabled} onCheckedChange={(v) => save({ rsvp_enabled: v })} />
             </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="max_guests">Limite total de convidados (opcional)</Label>
+              <Input
+                id="max_guests"
+                type="number"
+                min={1}
+                defaultValue={inv.max_guests ?? ""}
+                onBlur={(e) => save({ max_guests: e.target.value ? Number(e.target.value) : null })}
+                placeholder="Ex.: 120"
+              />
+              <p className="text-xs text-muted-foreground">As confirmações param automaticamente ao atingir o limite.</p>
+            </div>
             {inv.published && (
               <div className="rounded-xl bg-secondary p-4">
                 <p className="text-xs text-muted-foreground">Link público</p>
@@ -800,31 +812,15 @@ function Editor() {
         </TabsContent>
 
         <TabsContent value="rsvp" className="mt-4">
-          <div className="glass rounded-3xl p-6">
-            <div className="mb-4 flex items-center gap-2">
-              <Users className="h-5 w-5 text-primary" />
-              <h3 className="font-display text-xl font-semibold">Convidados que responderam</h3>
-            </div>
-            {rsvps.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nenhuma resposta ainda.</p>
-            ) : (
-              <ul className="divide-y divide-white/5">
-                {rsvps.map((r) => (
-                  <li key={r.id} className="flex items-center justify-between py-3">
-                    <div>
-                      <p className="font-medium">{r.guest_name}</p>
-                      {r.message && <p className="mt-0.5 text-xs text-muted-foreground">“{r.message}”</p>}
-                    </div>
-                    <div className="text-right text-xs">
-                      <p className={r.attending ? "text-primary" : "text-destructive"}>
-                        {r.attending ? `Vai (${r.guest_count})` : "Não vai"}
-                      </p>
-                      <p className="text-muted-foreground">{new Date(r.created_at).toLocaleDateString("pt-BR")}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
+          <div className="glass rounded-3xl p-6 text-center">
+            <Users className="mx-auto h-8 w-8 text-primary" />
+            <h3 className="mt-3 font-display text-xl font-semibold">Painel completo de presenças</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Veja confirmados, pendentes, gráficos e exporte para PDF/Excel.
+            </p>
+            <Button asChild className="mt-5 bg-gradient-primary text-primary-foreground shadow-glow">
+              <Link to="/painel/$id" params={{ id: inv.id }}>Abrir painel ({rsvps.length})</Link>
+            </Button>
           </div>
         </TabsContent>
       </Tabs>

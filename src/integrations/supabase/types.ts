@@ -33,6 +33,7 @@ export type Database = {
           id: string
           location: string | null
           location_url: string | null
+          max_guests: number | null
           message: string | null
           playlist_url: string | null
           published: boolean
@@ -65,6 +66,7 @@ export type Database = {
           id?: string
           location?: string | null
           location_url?: string | null
+          max_guests?: number | null
           message?: string | null
           playlist_url?: string | null
           published?: boolean
@@ -97,6 +99,7 @@ export type Database = {
           id?: string
           location?: string | null
           location_url?: string | null
+          max_guests?: number | null
           message?: string | null
           playlist_url?: string | null
           published?: boolean
@@ -141,29 +144,41 @@ export type Database = {
         Row: {
           attending: boolean
           created_at: string
+          email: string | null
           guest_count: number
           guest_name: string
           id: string
           invite_id: string
           message: string | null
+          notes: string | null
+          phone: string | null
+          token: string
         }
         Insert: {
           attending?: boolean
           created_at?: string
+          email?: string | null
           guest_count?: number
           guest_name: string
           id?: string
           invite_id: string
           message?: string | null
+          notes?: string | null
+          phone?: string | null
+          token?: string
         }
         Update: {
           attending?: boolean
           created_at?: string
+          email?: string | null
           guest_count?: number
           guest_name?: string
           id?: string
           invite_id?: string
           message?: string | null
+          notes?: string | null
+          phone?: string | null
+          token?: string
         }
         Relationships: [
           {
@@ -229,6 +244,22 @@ export type Database = {
     }
     Functions: {
       draw_secret_santa: { Args: { _invite_id: string }; Returns: number }
+      get_rsvp_by_token: {
+        Args: { _token: string }
+        Returns: {
+          attending: boolean
+          created_at: string
+          event_date: string
+          guest_count: number
+          guest_name: string
+          id: string
+          invite_id: string
+          invite_title: string
+          message: string
+          notes: string
+          slug: string
+        }[]
+      }
       get_secret_santa_assignment: {
         Args: { _token: string }
         Returns: {

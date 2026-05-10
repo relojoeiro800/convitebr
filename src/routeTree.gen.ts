@@ -15,6 +15,8 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SorteioTokenRouteImport } from './routes/sorteio.$token'
+import { Route as RsvpTokenRouteImport } from './routes/rsvp.$token'
+import { Route as PainelIdRouteImport } from './routes/painel.$id'
 import { Route as EditorIdRouteImport } from './routes/editor.$id'
 import { Route as ConviteSlugRouteImport } from './routes/convite.$slug'
 
@@ -48,6 +50,16 @@ const SorteioTokenRoute = SorteioTokenRouteImport.update({
   path: '/sorteio/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RsvpTokenRoute = RsvpTokenRouteImport.update({
+  id: '/rsvp/$token',
+  path: '/rsvp/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PainelIdRoute = PainelIdRouteImport.update({
+  id: '/painel/$id',
+  path: '/painel/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EditorIdRoute = EditorIdRouteImport.update({
   id: '/editor/$id',
   path: '/editor/$id',
@@ -67,6 +79,8 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/convite/$slug': typeof ConviteSlugRoute
   '/editor/$id': typeof EditorIdRoute
+  '/painel/$id': typeof PainelIdRoute
+  '/rsvp/$token': typeof RsvpTokenRoute
   '/sorteio/$token': typeof SorteioTokenRoute
 }
 export interface FileRoutesByTo {
@@ -77,6 +91,8 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/convite/$slug': typeof ConviteSlugRoute
   '/editor/$id': typeof EditorIdRoute
+  '/painel/$id': typeof PainelIdRoute
+  '/rsvp/$token': typeof RsvpTokenRoute
   '/sorteio/$token': typeof SorteioTokenRoute
 }
 export interface FileRoutesById {
@@ -88,6 +104,8 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/convite/$slug': typeof ConviteSlugRoute
   '/editor/$id': typeof EditorIdRoute
+  '/painel/$id': typeof PainelIdRoute
+  '/rsvp/$token': typeof RsvpTokenRoute
   '/sorteio/$token': typeof SorteioTokenRoute
 }
 export interface FileRouteTypes {
@@ -100,6 +118,8 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/convite/$slug'
     | '/editor/$id'
+    | '/painel/$id'
+    | '/rsvp/$token'
     | '/sorteio/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -110,6 +130,8 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/convite/$slug'
     | '/editor/$id'
+    | '/painel/$id'
+    | '/rsvp/$token'
     | '/sorteio/$token'
   id:
     | '__root__'
@@ -120,6 +142,8 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/convite/$slug'
     | '/editor/$id'
+    | '/painel/$id'
+    | '/rsvp/$token'
     | '/sorteio/$token'
   fileRoutesById: FileRoutesById
 }
@@ -131,6 +155,8 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   ConviteSlugRoute: typeof ConviteSlugRoute
   EditorIdRoute: typeof EditorIdRoute
+  PainelIdRoute: typeof PainelIdRoute
+  RsvpTokenRoute: typeof RsvpTokenRoute
   SorteioTokenRoute: typeof SorteioTokenRoute
 }
 
@@ -178,6 +204,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SorteioTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/rsvp/$token': {
+      id: '/rsvp/$token'
+      path: '/rsvp/$token'
+      fullPath: '/rsvp/$token'
+      preLoaderRoute: typeof RsvpTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/painel/$id': {
+      id: '/painel/$id'
+      path: '/painel/$id'
+      fullPath: '/painel/$id'
+      preLoaderRoute: typeof PainelIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/editor/$id': {
       id: '/editor/$id'
       path: '/editor/$id'
@@ -203,6 +243,8 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   ConviteSlugRoute: ConviteSlugRoute,
   EditorIdRoute: EditorIdRoute,
+  PainelIdRoute: PainelIdRoute,
+  RsvpTokenRoute: RsvpTokenRoute,
   SorteioTokenRoute: SorteioTokenRoute,
 }
 export const routeTree = rootRouteImport
