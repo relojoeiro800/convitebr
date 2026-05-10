@@ -68,6 +68,25 @@ function PublicInvite() {
     else { a.play().then(() => setMusicOn(true)).catch(() => toast.error("Não foi possível reproduzir")); }
   }
 
+  // Try autoplay on first user interaction (browsers block silent autoplay)
+  useEffect(() => {
+    if (!inv?.background_music_url) return;
+    const tryPlay = () => {
+      const a = audioRef.current;
+      if (a && a.paused) {
+        a.play().then(() => setMusicOn(true)).catch(() => { /* ignore */ });
+      }
+      window.removeEventListener("pointerdown", tryPlay);
+      window.removeEventListener("keydown", tryPlay);
+    };
+    window.addEventListener("pointerdown", tryPlay, { once: true });
+    window.addEventListener("keydown", tryPlay, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", tryPlay);
+      window.removeEventListener("keydown", tryPlay);
+    };
+  }, [inv?.background_music_url]);
+
   async function handleRsvp(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!inv) return;
