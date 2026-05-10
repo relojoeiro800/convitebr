@@ -122,6 +122,9 @@ function Dashboard() {
         </div>
         <div className="flex items-center gap-2">
           <Button asChild variant="outline">
+            <Link to="/relatorios"><BarChart3 className="mr-2 h-4 w-4" />Relatórios</Link>
+          </Button>
+          <Button asChild variant="outline">
             <Link to="/ia">IA</Link>
           </Button>
           <Button asChild variant="outline">
