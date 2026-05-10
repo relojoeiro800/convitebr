@@ -209,6 +209,8 @@ function Editor() {
       <Tabs defaultValue="content">
         <TabsList className="bg-secondary flex-wrap">
           <TabsTrigger value="content">Conteúdo</TabsTrigger>
+          <TabsTrigger value="ai">✨ IA</TabsTrigger>
+          <TabsTrigger value="templates">Templates</TabsTrigger>
           <TabsTrigger value="visual">Visual</TabsTrigger>
           <TabsTrigger value="media">Mídia</TabsTrigger>
           <TabsTrigger value="stickers">Stickers</TabsTrigger>
