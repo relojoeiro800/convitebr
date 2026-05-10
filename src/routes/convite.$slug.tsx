@@ -15,6 +15,7 @@ import { QRCode } from "@/components/QRCode";
 import { VideoEmbed } from "@/components/InvitePreview";
 import { fontCss, themePreset, FRAMES, type Sticker } from "@/lib/editor-presets";
 import { INVITE_TYPES, formatEventDate, type InviteType } from "@/lib/invites";
+import { ShareInvite } from "@/components/ShareInvite";
 
 export const Route = createFileRoute("/convite/$slug")({
   component: PublicInvite,
