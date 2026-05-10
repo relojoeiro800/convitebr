@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { ShareInvite } from "@/components/ShareInvite";
 import { INVITE_TYPES, type InviteType, slugify, inviteTypeLabel, formatEventDate } from "@/lib/invites";
 
 export const Route = createFileRoute("/dashboard")({
