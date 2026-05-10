@@ -1,7 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Share2, Edit3, Trash2, Eye, ExternalLink } from "lucide-react";
+import {
+  Plus, Share2, Edit3, Trash2, Eye, ExternalLink,
+  FileText, Send, Users, Crown,
+} from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -26,6 +29,7 @@ type Invite = {
   title: string;
   event_date: string | null;
   published: boolean;
+  view_count: number;
   created_at: string;
 };
 
@@ -33,6 +37,7 @@ function Dashboard() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [invites, setInvites] = useState<Invite[]>([]);
+  const [rsvpCount, setRsvpCount] = useState(0);
   const [open, setOpen] = useState(false);
   const [creating, setCreating] = useState(false);
 
@@ -44,13 +49,25 @@ function Dashboard() {
     if (!user) return;
     supabase
       .from("invites")
-      .select("id,slug,type,title,event_date,published,created_at")
+      .select("id,slug,type,title,event_date,published,view_count,created_at")
       .order("created_at", { ascending: false })
       .then(({ data, error }) => {
         if (error) toast.error(error.message);
         else setInvites((data ?? []) as Invite[]);
       });
+
+    supabase
+      .from("rsvps")
+      .select("id", { count: "exact", head: true })
+      .then(({ count }) => setRsvpCount(count ?? 0));
   }, [user]);
+
+  const stats = useMemo(() => {
+    const total = invites.length;
+    const published = invites.filter((i) => i.published).length;
+    const views = invites.reduce((acc, i) => acc + (i.view_count || 0), 0);
+    return { total, published, views };
+  }, [invites]);
 
   async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
