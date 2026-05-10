@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
-  ArrowLeft, Users, CheckCircle2, XCircle, Clock, FileSpreadsheet, FileText, Search, Mail, Phone,
+  ArrowLeft, Users, CheckCircle2, XCircle, Clock, FileSpreadsheet, FileText, Search, Mail, Phone, QrCode,
 } from "lucide-react";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend,
