@@ -266,7 +266,7 @@ function PublicInvite() {
                 rel="noreferrer"
                 className="glass flex items-center gap-3 rounded-2xl p-4 transition hover:shadow-glow"
               >
-                <Music className="h-5 w-5 text-primary" />
+                <MusicIcon className="h-5 w-5 text-primary" />
                 <div className="flex-1 text-left">
                   <p className="text-xs uppercase tracking-wider text-muted-foreground">
                     Playlist do evento
