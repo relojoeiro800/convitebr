@@ -695,7 +695,7 @@ export type Database = {
         | "corporativo"
         | "infantil"
         | "religioso"
-      plan_tier: "free" | "premium" | "business"
+      plan_tier: "free" | "premium" | "business" | "premium_pro"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -835,7 +835,7 @@ export const Constants = {
         "infantil",
         "religioso",
       ],
-      plan_tier: ["free", "premium", "business"],
+      plan_tier: ["free", "premium", "business", "premium_pro"],
     },
   },
 } as const
