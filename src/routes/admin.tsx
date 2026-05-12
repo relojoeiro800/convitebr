@@ -346,7 +346,7 @@ function UsersPanel({ onChange }: { onChange: () => void }) {
             <div className="flex gap-2 items-center flex-wrap">
               <Select
                 value={plans[p.id] ?? "free"}
-                onValueChange={(v) => setUserPlan(p.id, v as "free" | "premium" | "premium_pro" | "business")}
+                onValueChange={(v) => setUserPlan(p.id, v as PlanValue)}
               >
                 <SelectTrigger className="h-9 w-[180px]"><SelectValue placeholder="Plano" /></SelectTrigger>
                 <SelectContent>
