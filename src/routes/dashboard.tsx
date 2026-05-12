@@ -295,3 +295,138 @@ function Dashboard() {
     </main>
   );
 }
+
+type CreditRequest = {
+  id: string;
+  amount: number;
+  reason: string;
+  status: "pending" | "approved" | "rejected";
+  admin_note: string | null;
+  created_at: string;
+};
+
+function RequestCreditsButton() {
+  const { user } = useAuth();
+  const [open, setOpen] = useState(false);
+  const [amount, setAmount] = useState("5");
+  const [reason, setReason] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [requests, setRequests] = useState<CreditRequest[]>([]);
+
+  const loadRequests = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("credit_requests")
+      .select("id,amount,reason,status,admin_note,created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(10);
+    setRequests((data ?? []) as CreditRequest[]);
+  };
+
+  useEffect(() => { if (open) loadRequests(); }, [open, user]);
+
+  const submit = async () => {
+    if (!user) return;
+    const qty = parseInt(amount, 10);
+    if (!Number.isFinite(qty) || qty < 1 || qty > 1000) {
+      toast.error("Informe uma quantidade entre 1 e 1000");
+      return;
+    }
+    const trimmed = reason.trim();
+    if (trimmed.length < 3) {
+      toast.error("Descreva o motivo (mínimo 3 caracteres)");
+      return;
+    }
+    if (trimmed.length > 500) {
+      toast.error("Motivo muito longo (máx 500 caracteres)");
+      return;
+    }
+    setSubmitting(true);
+    const { error } = await supabase.from("credit_requests").insert({
+      user_id: user.id, amount: qty, reason: trimmed,
+    });
+    setSubmitting(false);
+    if (error) return toast.error(error.message);
+    toast.success("Solicitação enviada ao administrador");
+    setReason("");
+    setAmount("5");
+    loadRequests();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" className="bg-gradient-primary text-primary-foreground">
+          <Plus className="mr-2 h-4 w-4" /> Solicitar créditos
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Solicitar créditos</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="qty">Quantidade</Label>
+            <Input
+              id="qty" type="number" min={1} max={1000}
+              value={amount} onChange={(e) => setAmount(e.target.value)}
+            />
+          </div>
+          <div>
+            <Label htmlFor="reason">Motivo</Label>
+            <Textarea
+              id="reason" rows={4} maxLength={500}
+              placeholder="Para qual evento ou finalidade você precisa dos créditos?"
+              value={reason} onChange={(e) => setReason(e.target.value)}
+            />
+            <p className="mt-1 text-xs text-muted-foreground">
+              {reason.trim().length}/500
+            </p>
+          </div>
+
+          {requests.length > 0 && (
+            <div className="space-y-2 border-t pt-3">
+              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Suas últimas solicitações
+              </p>
+              <div className="max-h-40 space-y-2 overflow-y-auto">
+                {requests.map((r) => (
+                  <div key={r.id} className="rounded-lg border p-2 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">{r.amount} crédito(s)</span>
+                      <Badge
+                        variant={
+                          r.status === "approved" ? "default"
+                          : r.status === "rejected" ? "destructive"
+                          : "secondary"
+                        }
+                      >
+                        {r.status === "approved" ? "Aprovada"
+                          : r.status === "rejected" ? "Recusada"
+                          : "Pendente"}
+                      </Badge>
+                    </div>
+                    <p className="mt-1 text-muted-foreground line-clamp-2">{r.reason}</p>
+                    {r.admin_note && (
+                      <p className="mt-1 italic text-muted-foreground">
+                        Admin: {r.admin_note}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+          <Button onClick={submit} disabled={submitting}>
+            <Send className="mr-2 h-4 w-4" />
+            {submitting ? "Enviando…" : "Enviar solicitação"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
