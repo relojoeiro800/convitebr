@@ -19,6 +19,15 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const PLAN_OPTIONS: Array<{ value: "free" | "premium" | "premium_pro" | "business"; label: string }> = [
+  { value: "free", label: "Grátis" },
+  { value: "premium", label: "Premium" },
+  { value: "premium_pro", label: "Premium Profissional" },
+  { value: "business", label: "Business" },
+];
+const planLabel = (v: string) => PLAN_OPTIONS.find((p) => p.value === v)?.label ?? v;
 
 export const Route = createFileRoute("/admin")({
   component: AdminPanel,
