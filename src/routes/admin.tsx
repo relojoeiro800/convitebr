@@ -220,21 +220,35 @@ function UsersPanel({ onChange }: { onChange: () => void }) {
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
   const [suspended, setSuspended] = useState<Record<string, string | null>>({});
   const [admins, setAdmins] = useState<Set<string>>(new Set());
+  const [plans, setPlans] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
 
   const load = async () => {
-    const [{ data: p }, { data: s }, { data: r }] = await Promise.all([
+    const [{ data: p }, { data: s }, { data: r }, { data: subs }] = await Promise.all([
       supabase.from("profiles").select("id,full_name,created_at").order("created_at", { ascending: false }).limit(200),
       supabase.from("suspended_accounts").select("user_id,reason"),
       supabase.from("user_roles").select("user_id,role").eq("role", "admin"),
+      supabase.from("user_subscriptions").select("user_id,plan"),
     ]);
     setProfiles((p ?? []) as ProfileRow[]);
     const map: Record<string, string | null> = {};
     ((s ?? []) as SuspendRow[]).forEach((x) => { map[x.user_id] = x.reason; });
     setSuspended(map);
     setAdmins(new Set(((r ?? []) as Array<{ user_id: string }>).map((x) => x.user_id)));
+    const pmap: Record<string, string> = {};
+    ((subs ?? []) as Array<{ user_id: string; plan: string }>).forEach((x) => { pmap[x.user_id] = x.plan; });
+    setPlans(pmap);
   };
   useEffect(() => { load(); }, []);
+
+  const setUserPlan = async (userId: string, plan: "free" | "premium" | "premium_pro" | "business") => {
+    const { error } = await supabase
+      .from("user_subscriptions")
+      .upsert({ user_id: userId, plan, status: "active" }, { onConflict: "user_id" });
+    if (error) return toast.error(error.message);
+    toast.success(`Plano atualizado: ${planLabel(plan)}`);
+    load();
+  };
 
   const toggleSuspend = async (userId: string) => {
     if (suspended[userId] !== undefined) {
