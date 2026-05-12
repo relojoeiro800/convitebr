@@ -214,66 +214,42 @@ function UsersPanel({ onChange }: { onChange: () => void }) {
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
   const [suspended, setSuspended] = useState<Record<string, string | null>>({});
   const [admins, setAdmins] = useState<Set<string>>(new Set());
-  const [plans, setPlans] = useState<Record<string, string>>({});
+  const [credits, setCredits] = useState<Record<string, number>>({});
+  const [creditInput, setCreditInput] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
 
   const load = async () => {
-    const [{ data: p }, { data: s }, { data: r }, { data: subs }] = await Promise.all([
+    const [{ data: p }, { data: s }, { data: r }, { data: c }] = await Promise.all([
       supabase.from("profiles").select("id,full_name,created_at").order("created_at", { ascending: false }).limit(200),
       supabase.from("suspended_accounts").select("user_id,reason"),
       supabase.from("user_roles").select("user_id,role").eq("role", "admin"),
-      supabase.from("user_subscriptions").select("user_id,plan"),
+      supabase.from("credits").select("user_id,balance"),
     ]);
     setProfiles((p ?? []) as ProfileRow[]);
     const map: Record<string, string | null> = {};
     ((s ?? []) as SuspendRow[]).forEach((x) => { map[x.user_id] = x.reason; });
     setSuspended(map);
     setAdmins(new Set(((r ?? []) as Array<{ user_id: string }>).map((x) => x.user_id)));
-    const pmap: Record<string, string> = {};
-    ((subs ?? []) as Array<{ user_id: string; plan: string }>).forEach((x) => { pmap[x.user_id] = x.plan; });
-    setPlans(pmap);
+    const cmap: Record<string, number> = {};
+    ((c ?? []) as Array<{ user_id: string; balance: number }>).forEach((x) => { cmap[x.user_id] = x.balance; });
+    setCredits(cmap);
   };
   useEffect(() => { load(); }, []);
 
-  const setUserPlan = async (userId: string, plan: PlanValue) => {
-    const current = (plans[userId] as PlanValue) ?? "free";
-    if (current === plan) return;
-
-    // Buscar convites do usuário para validar limites
-    const { data: invites, error: invErr } = await supabase
-      .from("invites")
-      .select("id,published,max_guests")
-      .eq("user_id", userId);
-    if (invErr) return toast.error("Erro ao validar limites: " + invErr.message);
-
-    const limits = PLAN_LIMITS[plan];
-    const total = invites?.length ?? 0;
-    const published = (invites ?? []).filter((i) => i.published).length;
-    const maxGuestUsed = (invites ?? []).reduce((m, i) => Math.max(m, i.max_guests ?? 0), 0);
-
-    const errors: string[] = [];
-    if (limits.maxInvites !== null && total > limits.maxInvites) {
-      errors.push(`Usuário possui ${total} convites — plano ${planLabel(plan)} permite até ${limits.maxInvites}.`);
+  const adjustCredits = async (userId: string, delta: number) => {
+    if (!Number.isFinite(delta) || delta === 0) {
+      return toast.error("Informe um valor diferente de zero");
     }
-    if (limits.maxPublished !== null && published > limits.maxPublished) {
-      errors.push(`Usuário tem ${published} convites publicados — plano ${planLabel(plan)} permite até ${limits.maxPublished}.`);
-    }
-    if (limits.maxGuests !== null && maxGuestUsed > limits.maxGuests) {
-      errors.push(`Um convite usa limite de ${maxGuestUsed} convidados — plano ${planLabel(plan)} permite até ${limits.maxGuests}.`);
-    }
-    if (errors.length) {
-      toast.error("Mudança de plano bloqueada", {
-        description: errors.join(" "),
-        duration: 8000,
-      });
+    const reason = delta > 0 ? "admin_grant" : "admin_revoke";
+    const { data, error } = await supabase.rpc("admin_adjust_credits", {
+      _user_id: userId, _delta: delta, _reason: reason,
+    });
+    if (error) {
+      toast.error("Não foi possível ajustar créditos", { description: error.message });
       return;
     }
-
-    const { error } = await supabase
-      .from("user_subscriptions")
-      .upsert({ user_id: userId, plan, status: "active" }, { onConflict: "user_id" });
-    if (error) return toast.error(error.message);
-    toast.success(`Plano atualizado: ${planLabel(plan)}`);
+    toast.success(`Saldo atualizado: ${data} créditos`);
+    setCreditInput((s) => ({ ...s, [userId]: "" }));
     load();
   };
 
@@ -315,39 +291,50 @@ function UsersPanel({ onChange }: { onChange: () => void }) {
         <h3 className="font-semibold">Usuários ({profiles.length})</h3>
         <Input placeholder="Buscar…" value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-xs" />
       </div>
+      <p className="text-xs text-muted-foreground">
+        Cada convite publicado consome 1 crédito do usuário.
+      </p>
       <div className="divide-y">
-        {filtered.map((p) => (
-          <div key={p.id} className="py-3 flex items-center justify-between gap-3 flex-wrap">
-            <div>
-              <div className="font-medium flex items-center gap-2">
-                {p.full_name || p.id.slice(0, 8)}
-                {admins.has(p.id) && <Badge>Admin</Badge>}
-                {plans[p.id] && <Badge variant="secondary">{planLabel(plans[p.id])}</Badge>}
-                {suspended[p.id] !== undefined && <Badge variant="destructive">Suspenso</Badge>}
+        {filtered.map((p) => {
+          const balance = credits[p.id] ?? 0;
+          const raw = creditInput[p.id] ?? "";
+          const delta = parseInt(raw, 10);
+          return (
+            <div key={p.id} className="py-3 flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <div className="font-medium flex items-center gap-2">
+                  {p.full_name || p.id.slice(0, 8)}
+                  {admins.has(p.id) && <Badge>Admin</Badge>}
+                  <Badge variant="secondary">{balance} créditos</Badge>
+                  {suspended[p.id] !== undefined && <Badge variant="destructive">Suspenso</Badge>}
+                </div>
+                <div className="text-xs text-muted-foreground">{p.id}</div>
               </div>
-              <div className="text-xs text-muted-foreground">{p.id}</div>
+              <div className="flex gap-2 items-center flex-wrap">
+                <Input
+                  type="number"
+                  placeholder="±"
+                  value={raw}
+                  onChange={(e) => setCreditInput((s) => ({ ...s, [p.id]: e.target.value }))}
+                  className="h-9 w-24"
+                />
+                <Button
+                  size="sm"
+                  onClick={() => adjustCredits(p.id, Number.isFinite(delta) ? delta : 0)}
+                  disabled={!raw || !Number.isFinite(delta) || delta === 0}
+                >
+                  Ajustar
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => toggleAdmin(p.id)}>
+                  {admins.has(p.id) ? "Remover admin" : "Tornar admin"}
+                </Button>
+                <Button size="sm" variant={suspended[p.id] !== undefined ? "outline" : "destructive"} onClick={() => toggleSuspend(p.id)}>
+                  {suspended[p.id] !== undefined ? <><UserCheck className="h-4 w-4 mr-1" />Reativar</> : <><UserX className="h-4 w-4 mr-1" />Suspender</>}
+                </Button>
+              </div>
             </div>
-            <div className="flex gap-2 items-center flex-wrap">
-              <Select
-                value={plans[p.id] ?? "free"}
-                onValueChange={(v) => setUserPlan(p.id, v as PlanValue)}
-              >
-                <SelectTrigger className="h-9 w-[180px]"><SelectValue placeholder="Plano" /></SelectTrigger>
-                <SelectContent>
-                  {PLAN_OPTIONS.map((o) => (
-                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button size="sm" variant="outline" onClick={() => toggleAdmin(p.id)}>
-                {admins.has(p.id) ? "Remover admin" : "Tornar admin"}
-              </Button>
-              <Button size="sm" variant={suspended[p.id] !== undefined ? "outline" : "destructive"} onClick={() => toggleSuspend(p.id)}>
-                {suspended[p.id] !== undefined ? <><UserCheck className="h-4 w-4 mr-1" />Reativar</> : <><UserX className="h-4 w-4 mr-1" />Suspender</>}
-              </Button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
         {filtered.length === 0 && <p className="text-sm text-muted-foreground py-6 text-center">Nenhum usuário.</p>}
       </div>
     </Card>
