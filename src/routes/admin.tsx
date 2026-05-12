@@ -19,6 +19,15 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const PLAN_OPTIONS: Array<{ value: "free" | "premium" | "premium_pro" | "business"; label: string }> = [
+  { value: "free", label: "Grátis" },
+  { value: "premium", label: "Premium" },
+  { value: "premium_pro", label: "Premium Profissional" },
+  { value: "business", label: "Business" },
+];
+const planLabel = (v: string) => PLAN_OPTIONS.find((p) => p.value === v)?.label ?? v;
 
 export const Route = createFileRoute("/admin")({
   component: AdminPanel,
@@ -211,21 +220,35 @@ function UsersPanel({ onChange }: { onChange: () => void }) {
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
   const [suspended, setSuspended] = useState<Record<string, string | null>>({});
   const [admins, setAdmins] = useState<Set<string>>(new Set());
+  const [plans, setPlans] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
 
   const load = async () => {
-    const [{ data: p }, { data: s }, { data: r }] = await Promise.all([
+    const [{ data: p }, { data: s }, { data: r }, { data: subs }] = await Promise.all([
       supabase.from("profiles").select("id,full_name,created_at").order("created_at", { ascending: false }).limit(200),
       supabase.from("suspended_accounts").select("user_id,reason"),
       supabase.from("user_roles").select("user_id,role").eq("role", "admin"),
+      supabase.from("user_subscriptions").select("user_id,plan"),
     ]);
     setProfiles((p ?? []) as ProfileRow[]);
     const map: Record<string, string | null> = {};
     ((s ?? []) as SuspendRow[]).forEach((x) => { map[x.user_id] = x.reason; });
     setSuspended(map);
     setAdmins(new Set(((r ?? []) as Array<{ user_id: string }>).map((x) => x.user_id)));
+    const pmap: Record<string, string> = {};
+    ((subs ?? []) as Array<{ user_id: string; plan: string }>).forEach((x) => { pmap[x.user_id] = x.plan; });
+    setPlans(pmap);
   };
   useEffect(() => { load(); }, []);
+
+  const setUserPlan = async (userId: string, plan: "free" | "premium" | "premium_pro" | "business") => {
+    const { error } = await supabase
+      .from("user_subscriptions")
+      .upsert({ user_id: userId, plan, status: "active" }, { onConflict: "user_id" });
+    if (error) return toast.error(error.message);
+    toast.success(`Plano atualizado: ${planLabel(plan)}`);
+    load();
+  };
 
   const toggleSuspend = async (userId: string) => {
     if (suspended[userId] !== undefined) {
@@ -272,11 +295,23 @@ function UsersPanel({ onChange }: { onChange: () => void }) {
               <div className="font-medium flex items-center gap-2">
                 {p.full_name || p.id.slice(0, 8)}
                 {admins.has(p.id) && <Badge>Admin</Badge>}
+                {plans[p.id] && <Badge variant="secondary">{planLabel(plans[p.id])}</Badge>}
                 {suspended[p.id] !== undefined && <Badge variant="destructive">Suspenso</Badge>}
               </div>
               <div className="text-xs text-muted-foreground">{p.id}</div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center flex-wrap">
+              <Select
+                value={plans[p.id] ?? "free"}
+                onValueChange={(v) => setUserPlan(p.id, v as "free" | "premium" | "premium_pro" | "business")}
+              >
+                <SelectTrigger className="h-9 w-[180px]"><SelectValue placeholder="Plano" /></SelectTrigger>
+                <SelectContent>
+                  {PLAN_OPTIONS.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Button size="sm" variant="outline" onClick={() => toggleAdmin(p.id)}>
                 {admins.has(p.id) ? "Remover admin" : "Tornar admin"}
               </Button>

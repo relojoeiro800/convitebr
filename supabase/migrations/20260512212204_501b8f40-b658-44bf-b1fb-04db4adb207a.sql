@@ -1,0 +1,1 @@
+ALTER TYPE public.plan_tier ADD VALUE IF NOT EXISTS 'premium_pro';
