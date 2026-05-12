@@ -118,9 +118,32 @@ function PublicInvite() {
 
   if (!inv) {
     return (
-      <main className="mx-auto max-w-md px-4 py-24 text-center">
-        <h1 className="font-display text-3xl">Convite não encontrado</h1>
-        <p className="mt-2 text-muted-foreground">O link pode ter expirado ou estar incorreto.</p>
+      <main className="relative mx-auto flex min-h-[80vh] max-w-lg flex-col items-center justify-center px-6 py-16 text-center">
+        <div className="stars absolute inset-0 -z-10 opacity-40" />
+        <div className="glass animate-scale-in rounded-3xl p-10 shadow-elegant">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/15">
+            <Heart className="h-8 w-8 text-primary" />
+          </div>
+          <h1 className="mt-5 font-display text-3xl font-semibold text-gradient">
+            Convite indisponível
+          </h1>
+          <p className="mt-3 text-sm text-muted-foreground">
+            O link <span className="font-mono text-foreground">/{slug}</span> não existe ou ainda não foi publicado pelo organizador.
+          </p>
+          <ul className="mx-auto mt-5 max-w-xs space-y-1.5 text-left text-xs text-muted-foreground">
+            <li>• Confira se digitou o endereço corretamente</li>
+            <li>• Solicite um novo link a quem te convidou</li>
+            <li>• O convite pode ter sido despublicado</li>
+          </ul>
+          <div className="mt-7 flex flex-col gap-2 sm:flex-row sm:justify-center">
+            <Button asChild variant="default">
+              <a href="/">Ir para o início</a>
+            </Button>
+            <Button asChild variant="outline">
+              <a href="/dashboard">Criar meu convite</a>
+            </Button>
+          </div>
+        </div>
       </main>
     );
   }
