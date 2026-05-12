@@ -100,7 +100,7 @@ function SecurityPage() {
         invites: invites.data,
         rsvps,
         payments: payments.data,
-        subscriptions: subs.data,
+        credits: credits.data,
         favorites: favs.data,
       };
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
