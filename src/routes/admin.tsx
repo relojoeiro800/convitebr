@@ -295,11 +295,23 @@ function UsersPanel({ onChange }: { onChange: () => void }) {
               <div className="font-medium flex items-center gap-2">
                 {p.full_name || p.id.slice(0, 8)}
                 {admins.has(p.id) && <Badge>Admin</Badge>}
+                {plans[p.id] && <Badge variant="secondary">{planLabel(plans[p.id])}</Badge>}
                 {suspended[p.id] !== undefined && <Badge variant="destructive">Suspenso</Badge>}
               </div>
               <div className="text-xs text-muted-foreground">{p.id}</div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center flex-wrap">
+              <Select
+                value={plans[p.id] ?? "free"}
+                onValueChange={(v) => setUserPlan(p.id, v as "free" | "premium" | "premium_pro" | "business")}
+              >
+                <SelectTrigger className="h-9 w-[180px]"><SelectValue placeholder="Plano" /></SelectTrigger>
+                <SelectContent>
+                  {PLAN_OPTIONS.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Button size="sm" variant="outline" onClick={() => toggleAdmin(p.id)}>
                 {admins.has(p.id) ? "Remover admin" : "Tornar admin"}
               </Button>
