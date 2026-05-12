@@ -251,7 +251,40 @@ function UsersPanel({ onChange }: { onChange: () => void }) {
   };
   useEffect(() => { load(); }, []);
 
-  const setUserPlan = async (userId: string, plan: "free" | "premium" | "premium_pro" | "business") => {
+  const setUserPlan = async (userId: string, plan: PlanValue) => {
+    const current = (plans[userId] as PlanValue) ?? "free";
+    if (current === plan) return;
+
+    // Buscar convites do usuário para validar limites
+    const { data: invites, error: invErr } = await supabase
+      .from("invites")
+      .select("id,published,max_guests")
+      .eq("user_id", userId);
+    if (invErr) return toast.error("Erro ao validar limites: " + invErr.message);
+
+    const limits = PLAN_LIMITS[plan];
+    const total = invites?.length ?? 0;
+    const published = (invites ?? []).filter((i) => i.published).length;
+    const maxGuestUsed = (invites ?? []).reduce((m, i) => Math.max(m, i.max_guests ?? 0), 0);
+
+    const errors: string[] = [];
+    if (limits.maxInvites !== null && total > limits.maxInvites) {
+      errors.push(`Usuário possui ${total} convites — plano ${planLabel(plan)} permite até ${limits.maxInvites}.`);
+    }
+    if (limits.maxPublished !== null && published > limits.maxPublished) {
+      errors.push(`Usuário tem ${published} convites publicados — plano ${planLabel(plan)} permite até ${limits.maxPublished}.`);
+    }
+    if (limits.maxGuests !== null && maxGuestUsed > limits.maxGuests) {
+      errors.push(`Um convite usa limite de ${maxGuestUsed} convidados — plano ${planLabel(plan)} permite até ${limits.maxGuests}.`);
+    }
+    if (errors.length) {
+      toast.error("Mudança de plano bloqueada", {
+        description: errors.join(" "),
+        duration: 8000,
+      });
+      return;
+    }
+
     const { error } = await supabase
       .from("user_subscriptions")
       .upsert({ user_id: userId, plan, status: "active" }, { onConflict: "user_id" });
