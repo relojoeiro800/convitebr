@@ -598,7 +598,7 @@ function CreditRequestsPanel() {
   useEffect(() => { load(); }, []);
 
   const approve = async (id: string) => {
-    const note = prompt("Observação (opcional):") || null;
+    const note = prompt("Observação (opcional):") || undefined;
     setBusy(id);
     const { error } = await supabase.rpc("approve_credit_request", {
       _request_id: id, _note: note,
