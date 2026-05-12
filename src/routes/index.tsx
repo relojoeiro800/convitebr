@@ -250,19 +250,19 @@ function Landing() {
         </div>
       </section>
 
-      {/* PLANOS */}
+      {/* CRÉDITOS */}
       <section id="planos" className="relative mx-auto max-w-6xl px-4 py-20">
         <div className="mb-12 text-center">
           <h2 className="font-display text-3xl font-semibold sm:text-5xl">
-            Planos & <span className="text-gradient">preços</span>
+            Créditos <span className="text-gradient">avulsos</span>
           </h2>
           <p className="mt-3 text-muted-foreground">
-            Comece grátis. Faça upgrade quando precisar de mais.
+            Pague apenas pelo que usar. 1 crédito = 1 convite publicado.
           </p>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
-          {PLANS.map((p) => (
+          {CREDIT_PACKS.map((p) => (
             <div
               key={p.name}
               className={`glass relative rounded-3xl p-8 transition-all hover:-translate-y-1 ${
