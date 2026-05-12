@@ -42,6 +42,7 @@ function Dashboard() {
   const [open, setOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [credits, setCredits] = useState<number>(0);
 
   useEffect(() => {
     if (!user) return;
