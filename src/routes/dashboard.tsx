@@ -69,6 +69,13 @@ function Dashboard() {
       .from("rsvps")
       .select("id", { count: "exact", head: true })
       .then(({ count }) => setRsvpCount(count ?? 0));
+
+    supabase
+      .from("credits")
+      .select("balance")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => setCredits(data?.balance ?? 0));
   }, [user]);
 
   const stats = useMemo(() => {
