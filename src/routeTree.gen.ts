@@ -14,7 +14,6 @@ import { Route as SegurancaRouteImport } from './routes/seguranca'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
-import { Route as PlanosRouteImport } from './routes/planos'
 import { Route as IaRouteImport } from './routes/ia'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DiferenciaisRouteImport } from './routes/diferenciais'
@@ -52,11 +51,6 @@ const RelatoriosRoute = RelatoriosRouteImport.update({
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
   id: '/privacidade',
   path: '/privacidade',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PlanosRoute = PlanosRouteImport.update({
-  id: '/planos',
-  path: '/planos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IaRoute = IaRouteImport.update({
@@ -133,7 +127,6 @@ export interface FileRoutesByFullPath {
   '/diferenciais': typeof DiferenciaisRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/ia': typeof IaRoute
-  '/planos': typeof PlanosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/relatorios': typeof RelatoriosRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -154,7 +147,6 @@ export interface FileRoutesByTo {
   '/diferenciais': typeof DiferenciaisRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/ia': typeof IaRoute
-  '/planos': typeof PlanosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/relatorios': typeof RelatoriosRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -176,7 +168,6 @@ export interface FileRoutesById {
   '/diferenciais': typeof DiferenciaisRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/ia': typeof IaRoute
-  '/planos': typeof PlanosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/relatorios': typeof RelatoriosRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -199,7 +190,6 @@ export interface FileRouteTypes {
     | '/diferenciais'
     | '/forgot-password'
     | '/ia'
-    | '/planos'
     | '/privacidade'
     | '/relatorios'
     | '/reset-password'
@@ -220,7 +210,6 @@ export interface FileRouteTypes {
     | '/diferenciais'
     | '/forgot-password'
     | '/ia'
-    | '/planos'
     | '/privacidade'
     | '/relatorios'
     | '/reset-password'
@@ -241,7 +230,6 @@ export interface FileRouteTypes {
     | '/diferenciais'
     | '/forgot-password'
     | '/ia'
-    | '/planos'
     | '/privacidade'
     | '/relatorios'
     | '/reset-password'
@@ -263,7 +251,6 @@ export interface RootRouteChildren {
   DiferenciaisRoute: typeof DiferenciaisRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   IaRoute: typeof IaRoute
-  PlanosRoute: typeof PlanosRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   RelatoriosRoute: typeof RelatoriosRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -312,13 +299,6 @@ declare module '@tanstack/react-router' {
       path: '/privacidade'
       fullPath: '/privacidade'
       preLoaderRoute: typeof PrivacidadeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/planos': {
-      id: '/planos'
-      path: '/planos'
-      fullPath: '/planos'
-      preLoaderRoute: typeof PlanosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ia': {
@@ -423,7 +403,6 @@ const rootRouteChildren: RootRouteChildren = {
   DiferenciaisRoute: DiferenciaisRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   IaRoute: IaRoute,
-  PlanosRoute: PlanosRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   RelatoriosRoute: RelatoriosRoute,
   ResetPasswordRoute: ResetPasswordRoute,
@@ -439,3 +418,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
