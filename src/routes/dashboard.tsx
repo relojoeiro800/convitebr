@@ -246,11 +246,13 @@ function Dashboard() {
               </div>
 
               <div className="mt-5 flex flex-wrap gap-2">
-                <Button asChild size="sm" variant="outline" className="border-white/15 bg-white/5">
-                  <Link to="/editor/$id" params={{ id: inv.id }}>
-                    <Edit3 className="mr-1 h-3.5 w-3.5" /> Editar
-                  </Link>
-                </Button>
+                {!inv.published && (
+                  <Button asChild size="sm" variant="outline" className="border-white/15 bg-white/5">
+                    <Link to="/editor/$id" params={{ id: inv.id }}>
+                      <Edit3 className="mr-1 h-3.5 w-3.5" /> Editar
+                    </Link>
+                  </Button>
+                )}
                 <Button asChild size="sm" variant="outline" className="border-white/15 bg-white/5">
                   <Link to="/convite/$slug" params={{ slug: inv.slug }} target="_blank">
                     <Eye className="mr-1 h-3.5 w-3.5" /> Ver
@@ -262,9 +264,16 @@ function Dashboard() {
                     title={inv.title}
                   />
                 )}
-                <Button onClick={() => handleDelete(inv.id)} size="sm" variant="ghost" className="ml-auto text-destructive">
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
+                {!inv.published && (
+                  <Button onClick={() => handleDelete(inv.id)} size="sm" variant="ghost" className="ml-auto text-destructive">
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+                {inv.published && (
+                  <span className="ml-auto self-center text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Bloqueado após publicação
+                  </span>
+                )}
               </div>
             </div>
           ))}
