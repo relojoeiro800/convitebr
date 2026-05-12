@@ -219,10 +219,11 @@ function Dashboard() {
               {credits} {credits === 1 ? "crédito disponível" : "créditos disponíveis"}
             </p>
             <p className="text-xs text-muted-foreground">
-              Cada convite publicado consome 1 crédito. Solicite mais ao administrador.
+              Cada convite publicado consome 1 crédito.
             </p>
           </div>
         </div>
+        <RequestCreditsButton />
       </div>
       {invites.length === 0 ? (
         <div className="glass rounded-3xl p-12 text-center">
