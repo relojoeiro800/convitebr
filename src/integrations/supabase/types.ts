@@ -73,6 +73,45 @@ export type Database = {
           },
         ]
       }
+      credit_requests: {
+        Row: {
+          admin_note: string | null
+          amount: number
+          created_at: string
+          id: string
+          reason: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_note?: string | null
+          amount: number
+          created_at?: string
+          id?: string
+          reason: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_note?: string | null
+          amount?: number
+          created_at?: string
+          id?: string
+          reason?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       credit_transactions: {
         Row: {
           actor_id: string | null
@@ -609,6 +648,10 @@ export type Database = {
     Functions: {
       admin_adjust_credits: {
         Args: { _delta: number; _reason: string; _user_id: string }
+        Returns: number
+      }
+      approve_credit_request: {
+        Args: { _note?: string; _request_id: string }
         Returns: number
       }
       check_in_rsvp: {
