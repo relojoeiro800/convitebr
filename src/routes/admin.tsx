@@ -21,13 +21,23 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogT
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const PLAN_OPTIONS: Array<{ value: "free" | "premium" | "premium_pro" | "business"; label: string }> = [
+type PlanValue = "free" | "premium" | "premium_pro" | "business";
+
+const PLAN_OPTIONS: Array<{ value: PlanValue; label: string }> = [
   { value: "free", label: "Grátis" },
   { value: "premium", label: "Premium" },
   { value: "premium_pro", label: "Premium Profissional" },
   { value: "business", label: "Business" },
 ];
 const planLabel = (v: string) => PLAN_OPTIONS.find((p) => p.value === v)?.label ?? v;
+
+// Limites por plano (null = ilimitado)
+const PLAN_LIMITS: Record<PlanValue, { maxInvites: number | null; maxGuests: number | null; maxPublished: number | null }> = {
+  free:        { maxInvites: 2,  maxGuests: 50,  maxPublished: 1 },
+  premium:     { maxInvites: 10, maxGuests: 200, maxPublished: 5 },
+  premium_pro: { maxInvites: 50, maxGuests: 500, maxPublished: 20 },
+  business:    { maxInvites: null, maxGuests: null, maxPublished: null },
+};
 
 export const Route = createFileRoute("/admin")({
   component: AdminPanel,
