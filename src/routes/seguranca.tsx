@@ -82,10 +82,10 @@ function SecurityPage() {
     if (!user) return;
     setExporting(true);
     try {
-      const [profile, invites, subs, payments, favs] = await Promise.all([
+      const [profile, invites, credits, payments, favs] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
         supabase.from("invites").select("*").eq("user_id", user.id),
-        supabase.from("user_subscriptions").select("*").eq("user_id", user.id),
+        supabase.from("credits").select("*").eq("user_id", user.id),
         supabase.from("payments").select("*").eq("user_id", user.id),
         supabase.from("template_favorites").select("*").eq("user_id", user.id),
       ]);
@@ -100,7 +100,7 @@ function SecurityPage() {
         invites: invites.data,
         rsvps,
         payments: payments.data,
-        subscriptions: subs.data,
+        credits: credits.data,
         favorites: favs.data,
       };
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });

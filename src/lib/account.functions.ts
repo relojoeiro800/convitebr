@@ -18,7 +18,8 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
     );
     await supabaseAdmin.from("invites").delete().eq("user_id", userId);
     await supabaseAdmin.from("payments").delete().eq("user_id", userId);
-    await supabaseAdmin.from("user_subscriptions").delete().eq("user_id", userId);
+    await supabaseAdmin.from("credits").delete().eq("user_id", userId);
+    await supabaseAdmin.from("credit_transactions").delete().eq("user_id", userId);
     await supabaseAdmin.from("template_favorites").delete().eq("user_id", userId);
     await supabaseAdmin.from("user_roles").delete().eq("user_id", userId);
     await supabaseAdmin.from("profiles").delete().eq("id", userId);

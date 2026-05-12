@@ -26,44 +26,42 @@ export const Route = createFileRoute("/")({
   }),
 });
 
-const PLANS = [
+const CREDIT_PACKS = [
   {
-    name: "Essencial",
-    price: "Grátis",
-    period: "para sempre",
+    name: "Avulso",
+    price: "R$ 29",
+    period: "por crédito",
     highlight: false,
     features: [
-      "1 convite ativo",
+      "1 convite publicado",
       "RSVP integrado",
-      "Link compartilhável",
-      "Tema Nebula básico",
+      "QR Code para check-in",
+      "Sem mensalidade",
     ],
-    cta: "Começar grátis",
+    cta: "Começar agora",
   },
   {
-    name: "Premium",
-    price: "R$ 29",
-    period: "por evento",
+    name: "Pacote Festa",
+    price: "R$ 119",
+    period: "5 créditos",
     highlight: true,
     features: [
-      "Convites ilimitados",
-      "QR Code personalizado",
-      "Envio por WhatsApp",
-      "Galeria de fotos",
-      "Música de fundo",
-      "Sem marca Convite BR",
+      "5 convites publicados",
+      "Economia de 18%",
+      "Validade ilimitada",
+      "Suporte por e-mail",
     ],
-    cta: "Assinar Premium",
+    cta: "Quero o pacote",
   },
   {
-    name: "Profissional",
-    price: "R$ 89",
-    period: "por mês",
+    name: "Pacote Pro",
+    price: "R$ 199",
+    period: "10 créditos",
     highlight: false,
     features: [
-      "Para cerimonialistas",
-      "Domínio próprio",
-      "Painel de clientes",
+      "10 convites publicados",
+      "Ideal para cerimonialistas",
+      "Economia de 31%",
       "Suporte prioritário",
     ],
     cta: "Falar com vendas",
@@ -252,19 +250,19 @@ function Landing() {
         </div>
       </section>
 
-      {/* PLANOS */}
+      {/* CRÉDITOS */}
       <section id="planos" className="relative mx-auto max-w-6xl px-4 py-20">
         <div className="mb-12 text-center">
           <h2 className="font-display text-3xl font-semibold sm:text-5xl">
-            Planos & <span className="text-gradient">preços</span>
+            Créditos <span className="text-gradient">avulsos</span>
           </h2>
           <p className="mt-3 text-muted-foreground">
-            Comece grátis. Faça upgrade quando precisar de mais.
+            Pague apenas pelo que usar. 1 crédito = 1 convite publicado.
           </p>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
-          {PLANS.map((p) => (
+          {CREDIT_PACKS.map((p) => (
             <div
               key={p.name}
               className={`glass relative rounded-3xl p-8 transition-all hover:-translate-y-1 ${
