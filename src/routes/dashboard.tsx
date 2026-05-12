@@ -207,24 +207,22 @@ function Dashboard() {
         ))}
       </div>
 
-      {/* PLANO */}
+      {/* CRÉDITOS */}
       <div className="mb-8 glass flex flex-wrap items-center justify-between gap-4 rounded-3xl p-5">
         <div className="flex items-center gap-3">
           <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-primary text-primary-foreground">
             <Crown className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-sm font-medium">Plano Essencial</p>
+            <p className="text-sm font-medium">
+              {credits} {credits === 1 ? "crédito disponível" : "créditos disponíveis"}
+            </p>
             <p className="text-xs text-muted-foreground">
-              1 convite ativo · faça upgrade para recursos premium
+              Cada convite publicado consome 1 crédito. Solicite mais ao administrador.
             </p>
           </div>
         </div>
-        <Button asChild variant="outline" size="sm" className="border-white/15 bg-white/5">
-          <Link to="/">Ver planos</Link>
-        </Button>
       </div>
-
       {invites.length === 0 ? (
         <div className="glass rounded-3xl p-12 text-center">
           <p className="text-muted-foreground">Você ainda não criou nenhum convite.</p>
