@@ -561,3 +561,118 @@ function LogsPanel() {
     </Card>
   );
 }
+
+type CreditReqRow = {
+  id: string;
+  user_id: string;
+  amount: number;
+  reason: string;
+  status: "pending" | "approved" | "rejected";
+  admin_note: string | null;
+  created_at: string;
+};
+
+function CreditRequestsPanel() {
+  const [items, setItems] = useState<CreditReqRow[]>([]);
+  const [names, setNames] = useState<Record<string, string>>({});
+  const [filter, setFilter] = useState<"pending" | "approved" | "rejected" | "all">("pending");
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const load = async () => {
+    const { data, error } = await supabase
+      .from("credit_requests")
+      .select("id,user_id,amount,reason,status,admin_note,created_at")
+      .order("created_at", { ascending: false });
+    if (error) return toast.error(error.message);
+    const rows = (data ?? []) as CreditReqRow[];
+    setItems(rows);
+    const ids = Array.from(new Set(rows.map((r) => r.user_id)));
+    if (ids.length) {
+      const { data: profs } = await supabase
+        .from("profiles").select("id,full_name").in("id", ids);
+      const m: Record<string, string> = {};
+      (profs ?? []).forEach((p) => { m[p.id] = p.full_name ?? p.id.slice(0, 8); });
+      setNames(m);
+    }
+  };
+  useEffect(() => { load(); }, []);
+
+  const approve = async (id: string) => {
+    const note = prompt("Observação (opcional):") || null;
+    setBusy(id);
+    const { error } = await supabase.rpc("approve_credit_request", {
+      _request_id: id, _note: note,
+    });
+    setBusy(null);
+    if (error) return toast.error(error.message);
+    toast.success("Solicitação aprovada e créditos adicionados");
+    load();
+  };
+
+  const reject = async (id: string) => {
+    const note = prompt("Motivo da recusa:") || "Recusada pelo admin";
+    setBusy(id);
+    const { error } = await supabase
+      .from("credit_requests")
+      .update({ status: "rejected", admin_note: note, reviewed_at: new Date().toISOString() })
+      .eq("id", id);
+    setBusy(null);
+    if (error) return toast.error(error.message);
+    toast.success("Solicitação recusada");
+    load();
+  };
+
+  const filtered = items.filter((i) => filter === "all" || i.status === filter);
+
+  return (
+    <Card className="p-5 space-y-4">
+      <div className="flex justify-between flex-wrap gap-3 items-center">
+        <h3 className="font-semibold">
+          Solicitações de créditos ({items.filter((i) => i.status === "pending").length} pendentes)
+        </h3>
+        <div className="flex gap-2">
+          {(["pending", "approved", "rejected", "all"] as const).map((f) => (
+            <Button key={f} size="sm" variant={filter === f ? "default" : "outline"} onClick={() => setFilter(f)}>
+              {f === "all" ? "Todas" : f === "pending" ? "Pendentes" : f === "approved" ? "Aprovadas" : "Recusadas"}
+            </Button>
+          ))}
+        </div>
+      </div>
+      <div className="divide-y">
+        {filtered.map((r) => (
+          <div key={r.id} className="py-3 flex justify-between items-start gap-3 flex-wrap">
+            <div className="min-w-0 flex-1">
+              <div className="font-medium flex items-center gap-2 flex-wrap">
+                {names[r.user_id] || r.user_id.slice(0, 8)}
+                <Badge variant="secondary">{r.amount} crédito(s)</Badge>
+                <Badge variant={r.status === "approved" ? "default" : r.status === "rejected" ? "destructive" : "secondary"}>
+                  {r.status === "approved" ? "Aprovada" : r.status === "rejected" ? "Recusada" : "Pendente"}
+                </Badge>
+              </div>
+              <p className="text-sm mt-1">{r.reason}</p>
+              {r.admin_note && (
+                <p className="text-xs italic text-muted-foreground mt-1">Nota: {r.admin_note}</p>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">
+                {new Date(r.created_at).toLocaleString("pt-BR")}
+              </p>
+            </div>
+            {r.status === "pending" && (
+              <div className="flex gap-2">
+                <Button size="sm" disabled={busy === r.id} onClick={() => approve(r.id)}>
+                  <CheckCircle2 className="h-4 w-4 mr-1" />Aprovar
+                </Button>
+                <Button size="sm" variant="outline" disabled={busy === r.id} onClick={() => reject(r.id)}>
+                  <XCircle className="h-4 w-4 mr-1" />Recusar
+                </Button>
+              </div>
+            )}
+          </div>
+        ))}
+        {filtered.length === 0 && (
+          <p className="text-sm text-muted-foreground py-6 text-center">Nenhuma solicitação.</p>
+        )}
+      </div>
+    </Card>
+  );
+}
