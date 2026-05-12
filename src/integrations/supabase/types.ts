@@ -73,6 +73,60 @@ export type Database = {
           },
         ]
       }
+      credit_transactions: {
+        Row: {
+          actor_id: string | null
+          amount: number
+          created_at: string
+          id: string
+          invite_id: string | null
+          metadata: Json
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          amount: number
+          created_at?: string
+          id?: string
+          invite_id?: string | null
+          metadata?: Json
+          reason: string
+          user_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          amount?: number
+          created_at?: string
+          id?: string
+          invite_id?: string | null
+          metadata?: Json
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      credits: {
+        Row: {
+          balance: number
+          created_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       invites: {
         Row: {
           accent_color: string | null
@@ -286,57 +340,6 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id?: string
-        }
-        Relationships: []
-      }
-      plans: {
-        Row: {
-          created_at: string
-          currency: string
-          description: string | null
-          features: Json
-          id: string
-          interval: string
-          is_active: boolean
-          max_guests_per_invite: number | null
-          max_invites: number | null
-          name: string
-          price_cents: number
-          slug: string
-          sort_order: number
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          currency?: string
-          description?: string | null
-          features?: Json
-          id?: string
-          interval?: string
-          is_active?: boolean
-          max_guests_per_invite?: number | null
-          max_invites?: number | null
-          name: string
-          price_cents?: number
-          slug: string
-          sort_order?: number
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          currency?: string
-          description?: string | null
-          features?: Json
-          id?: string
-          interval?: string
-          is_active?: boolean
-          max_guests_per_invite?: number | null
-          max_invites?: number | null
-          name?: string
-          price_cents?: number
-          slug?: string
-          sort_order?: number
-          updated_at?: string
         }
         Relationships: []
       }
@@ -599,41 +602,15 @@ export type Database = {
         }
         Relationships: []
       }
-      user_subscriptions: {
-        Row: {
-          created_at: string
-          current_period_end: string | null
-          id: string
-          plan: Database["public"]["Enums"]["plan_tier"]
-          status: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          current_period_end?: string | null
-          id?: string
-          plan?: Database["public"]["Enums"]["plan_tier"]
-          status?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          current_period_end?: string | null
-          id?: string
-          plan?: Database["public"]["Enums"]["plan_tier"]
-          status?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      admin_adjust_credits: {
+        Args: { _delta: number; _reason: string; _user_id: string }
+        Returns: number
+      }
       check_in_rsvp: {
         Args: { _token: string }
         Returns: {
@@ -695,7 +672,6 @@ export type Database = {
         | "corporativo"
         | "infantil"
         | "religioso"
-      plan_tier: "free" | "premium" | "business" | "premium_pro"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -835,7 +811,6 @@ export const Constants = {
         "infantil",
         "religioso",
       ],
-      plan_tier: ["free", "premium", "business", "premium_pro"],
     },
   },
 } as const
