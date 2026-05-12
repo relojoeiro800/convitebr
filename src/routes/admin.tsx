@@ -107,6 +107,7 @@ function AdminPanel() {
             <TabsTrigger value="templates">Templates</TabsTrigger>
             <TabsTrigger value="categories">Categorias</TabsTrigger>
             <TabsTrigger value="payments">Pagamentos</TabsTrigger>
+            <TabsTrigger value="credit_requests">Solicitações</TabsTrigger>
             <TabsTrigger value="logs">Logs</TabsTrigger>
           </TabsList>
 
@@ -117,6 +118,7 @@ function AdminPanel() {
           <TabsContent value="templates" className="mt-6"><TemplatesPanel onChange={refresh} /></TabsContent>
           <TabsContent value="categories" className="mt-6"><CategoriesPanel /></TabsContent>
           <TabsContent value="payments" className="mt-6"><PaymentsPanel onChange={refresh} /></TabsContent>
+          <TabsContent value="credit_requests" className="mt-6"><CreditRequestsPanel /></TabsContent>
           <TabsContent value="logs" className="mt-6"><LogsPanel /></TabsContent>
         </Tabs>
       </main>
