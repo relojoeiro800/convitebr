@@ -21,13 +21,23 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogT
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const PLAN_OPTIONS: Array<{ value: "free" | "premium" | "premium_pro" | "business"; label: string }> = [
+type PlanValue = "free" | "premium" | "premium_pro" | "business";
+
+const PLAN_OPTIONS: Array<{ value: PlanValue; label: string }> = [
   { value: "free", label: "Grátis" },
   { value: "premium", label: "Premium" },
   { value: "premium_pro", label: "Premium Profissional" },
   { value: "business", label: "Business" },
 ];
 const planLabel = (v: string) => PLAN_OPTIONS.find((p) => p.value === v)?.label ?? v;
+
+// Limites por plano (null = ilimitado)
+const PLAN_LIMITS: Record<PlanValue, { maxInvites: number | null; maxGuests: number | null; maxPublished: number | null }> = {
+  free:        { maxInvites: 2,  maxGuests: 50,  maxPublished: 1 },
+  premium:     { maxInvites: 10, maxGuests: 200, maxPublished: 5 },
+  premium_pro: { maxInvites: 50, maxGuests: 500, maxPublished: 20 },
+  business:    { maxInvites: null, maxGuests: null, maxPublished: null },
+};
 
 export const Route = createFileRoute("/admin")({
   component: AdminPanel,
@@ -241,7 +251,40 @@ function UsersPanel({ onChange }: { onChange: () => void }) {
   };
   useEffect(() => { load(); }, []);
 
-  const setUserPlan = async (userId: string, plan: "free" | "premium" | "premium_pro" | "business") => {
+  const setUserPlan = async (userId: string, plan: PlanValue) => {
+    const current = (plans[userId] as PlanValue) ?? "free";
+    if (current === plan) return;
+
+    // Buscar convites do usuário para validar limites
+    const { data: invites, error: invErr } = await supabase
+      .from("invites")
+      .select("id,published,max_guests")
+      .eq("user_id", userId);
+    if (invErr) return toast.error("Erro ao validar limites: " + invErr.message);
+
+    const limits = PLAN_LIMITS[plan];
+    const total = invites?.length ?? 0;
+    const published = (invites ?? []).filter((i) => i.published).length;
+    const maxGuestUsed = (invites ?? []).reduce((m, i) => Math.max(m, i.max_guests ?? 0), 0);
+
+    const errors: string[] = [];
+    if (limits.maxInvites !== null && total > limits.maxInvites) {
+      errors.push(`Usuário possui ${total} convites — plano ${planLabel(plan)} permite até ${limits.maxInvites}.`);
+    }
+    if (limits.maxPublished !== null && published > limits.maxPublished) {
+      errors.push(`Usuário tem ${published} convites publicados — plano ${planLabel(plan)} permite até ${limits.maxPublished}.`);
+    }
+    if (limits.maxGuests !== null && maxGuestUsed > limits.maxGuests) {
+      errors.push(`Um convite usa limite de ${maxGuestUsed} convidados — plano ${planLabel(plan)} permite até ${limits.maxGuests}.`);
+    }
+    if (errors.length) {
+      toast.error("Mudança de plano bloqueada", {
+        description: errors.join(" "),
+        duration: 8000,
+      });
+      return;
+    }
+
     const { error } = await supabase
       .from("user_subscriptions")
       .upsert({ user_id: userId, plan, status: "active" }, { onConflict: "user_id" });
@@ -303,7 +346,7 @@ function UsersPanel({ onChange }: { onChange: () => void }) {
             <div className="flex gap-2 items-center flex-wrap">
               <Select
                 value={plans[p.id] ?? "free"}
-                onValueChange={(v) => setUserPlan(p.id, v as "free" | "premium" | "premium_pro" | "business")}
+                onValueChange={(v) => setUserPlan(p.id, v as PlanValue)}
               >
                 <SelectTrigger className="h-9 w-[180px]"><SelectValue placeholder="Plano" /></SelectTrigger>
                 <SelectContent>
