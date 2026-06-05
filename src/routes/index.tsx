@@ -115,6 +115,16 @@ const FAQ = [
 function Landing() {
   return (
     <main className="relative">
+      {/* FUNDO GLOBAL */}
+      <div className="stars pointer-events-none fixed inset-0 -z-20" />
+      <img
+        src={nebulaHero}
+        alt=""
+        aria-hidden
+        className="pointer-events-none fixed inset-0 -z-20 h-full w-full object-cover opacity-30"
+      />
+      <div className="pointer-events-none fixed inset-0 -z-20 bg-gradient-to-b from-background/70 via-background/50 to-background" />
+
       {/* HERO */}
       <section className="relative overflow-hidden">
         <div className="stars absolute inset-0" />
