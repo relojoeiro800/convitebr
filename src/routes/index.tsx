@@ -30,10 +30,10 @@ const CREDIT_PACKS = [
   {
     name: "Avulso",
     price: "R$ 29",
-    period: "por crédito",
+    period: "10 crédito",
     highlight: false,
     features: [
-      "1 convite publicado",
+      "10 convite publicado",
       "RSVP integrado",
       "QR Code para check-in",
       "Sem mensalidade",
@@ -43,10 +43,10 @@ const CREDIT_PACKS = [
   {
     name: "Pacote Festa",
     price: "R$ 119",
-    period: "5 créditos",
+    period: "20 créditos",
     highlight: true,
     features: [
-      "5 convites publicados",
+      "20 convites publicados",
       "Economia de 18%",
       "Validade ilimitada",
       "Suporte por e-mail",
@@ -56,10 +56,10 @@ const CREDIT_PACKS = [
   {
     name: "Pacote Pro",
     price: "R$ 199",
-    period: "10 créditos",
+    period: "50 créditos",
     highlight: false,
     features: [
-      "10 convites publicados",
+      "50 convites publicados",
       "Ideal para cerimonialistas",
       "Economia de 31%",
       "Suporte prioritário",
@@ -257,7 +257,7 @@ function Landing() {
             Créditos <span className="text-gradient">avulsos</span>
           </h2>
           <p className="mt-3 text-muted-foreground">
-            Pague apenas pelo que usar. 1 crédito = 1 convite publicado.
+            Pague apenas pelo que usar. 1 crédito = 10 convite publicado.
           </p>
         </div>
 
