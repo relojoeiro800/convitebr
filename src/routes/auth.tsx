@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sparkles } from "lucide-react";
+import nebulaHero from "@/assets/nebula-hero.jpg";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -87,6 +88,14 @@ function AuthPage() {
 
   return (
     <main className="relative mx-auto flex min-h-[calc(100vh-4rem)] max-w-md items-center px-4 py-12">
+      <div className="stars pointer-events-none fixed inset-0 -z-10" />
+      <img
+        src={nebulaHero}
+        alt=""
+        aria-hidden
+        className="pointer-events-none fixed inset-0 -z-10 h-full w-full object-cover opacity-40"
+      />
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-gradient-to-b from-background/60 via-background/40 to-background/80" />
       <div className="w-full">
         <div className="mb-6 text-center">
           <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-gradient-primary shadow-glow">
