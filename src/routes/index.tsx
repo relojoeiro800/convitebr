@@ -257,7 +257,7 @@ function Landing() {
             Créditos <span className="text-gradient">avulsos</span>
           </h2>
           <p className="mt-3 text-muted-foreground">
-            Pague apenas pelo que usar. 1 crédito = 1 convite publicado.
+            Pague apenas pelo que usar. 1 crédito = 10 convite publicado.
           </p>
         </div>
 
